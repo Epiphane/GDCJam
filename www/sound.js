@@ -158,3 +158,14 @@ var ghostChosen = new buzz.sound("./asset/sound/ghost-choose", {
     autoplay: false
 });
 
+var sheildChosen = new buzz.sound("./asset/sound/shield-choose", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var shieldHit = new buzz.sound("./asset/sound/shield-hit", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
