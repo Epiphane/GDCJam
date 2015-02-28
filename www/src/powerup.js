@@ -42,7 +42,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return IceBall;
+        return Shield;
     };
 })();
 
@@ -106,4 +106,29 @@ FireBall.prototype.sound = fireChosen;
 IceBall.prototype.approach = function(dx, dy) {
     this.game.ball.speedMult = 0.5;
     this.game.ball.normalizeVelocity();
+};
+
+var Shield = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 2; 
+};
+
+Shield.prototype.constructor = Shield;
+Shield.prototype.name = "SHIELD";
+Shield.prototype.description = "Description";
+Shield.prototype.icon = makeIcon("expand42");
+
+Shield.prototype.action = function() {
+    if (this.uses === 2) {
+        if (this.player.player === 1) {
+            this.game.p1shield = true;
+        }
+        else {
+            this.game.p2shield = true;
+        }
+    }
+
+    console.log(this.game.p1shield);
+
+    this.uses--;
 };

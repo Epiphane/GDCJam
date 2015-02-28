@@ -4,6 +4,9 @@ function InGame() {
     this.p1Score = 0;
     this.p2Score = 0;
 
+    this.p1shield = false;
+    this.p2shield = false;
+
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
