@@ -89,6 +89,8 @@ Ball.prototype.update = function(game) {
             this.normalizeVelocity();
 
             game.player1.bounceTime = 40;
+            game.giveExperience(0);
+
             this.bounce();
         }
         if (game.player1.bounceTime) {
@@ -111,6 +113,8 @@ Ball.prototype.update = function(game) {
             this.normalizeVelocity();
 
             game.player2.bounceTime = 40;
+            game.giveExperience(1);
+
             this.bounce();
         }
         
@@ -120,12 +124,8 @@ Ball.prototype.update = function(game) {
     }
 
     // Create trail!
-    // if (this.nextTrail-- <= 0) {
-        this.nextTrail = this.trailTimer;
-
-        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                        Math.atan(this.velocity.y / this.velocity.x), 60));
-    // }
+    this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                    Math.atan(this.velocity.y / this.velocity.x), 60));
 
     for(var t = 0; t < this.trail.length; t ++) {
         this.trail[t].update();

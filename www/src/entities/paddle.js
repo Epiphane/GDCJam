@@ -12,6 +12,9 @@ function Paddle(x, y, width, height) {
     this.max_dy = 20;
 
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
+
+    this.powerups = [];
+    this.exp = 50;
 }
 
 Paddle.prototype.getX = function() { return this.shape.pos.x; };
