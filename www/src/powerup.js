@@ -21,7 +21,7 @@ Powerup.prototype.done = function() {};
 
 /* Widen your "bar" */
 
-var WideBar = function() {};
+var WideBar = Powerup;
 WideBar.name = "Wide Paddle";
 WideBar.description = "May your paddle be wide and your future be bright!";
 

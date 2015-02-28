@@ -5,15 +5,15 @@
 function PowerupOption(x, y, powerup) {
     var padding = 40;
 
-    this.height = canvas.height / 2 - 2 * padding - 60;
-    this.width = canvas.width / 2 - 2 * padding;
+    this.height = gameSize.height / 2 - 2 * padding - 60;
+    this.width = gameSize.width / 2 - 2 * padding;
 
     if (y === 0)
-        this.shape = new SAT.Box(new SAT.Vector(canvas.width * x / 2 + padding, 
-                                                canvas.height - padding - this.height), 
+        this.shape = new SAT.Box(new SAT.Vector(gameSize.width * x / 2 + padding, 
+                                                gameSize.height - padding - this.height), 
                                  this.width, this.height).toPolygon();
     else if (y === 1)
-        this.shape = new SAT.Box(new SAT.Vector(canvas.width * x / 2 + padding, 
+        this.shape = new SAT.Box(new SAT.Vector(gameSize.width * x / 2 + padding, 
                                                 padding), 
                                  this.width, this.height).toPolygon();
 

@@ -12,15 +12,21 @@ function Paddle(x, y, width, height) {
     this.max_dy = 20;
 
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
-
-    this.powerups = [];
-    this.exp = 50;
 }
 
 Paddle.prototype.updateShape = function() {
     this.shape = new SAT.Box(new SAT.Vector(this.getX(), this.getY()), 
                             this.getWidth(), this.getHeight()).toPolygon();
 };
+
+Paddle.prototype.setPowerups = function(powerups) {
+    this.powerups = powerups;
+
+    for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
+        this.powerups[ndx].player = this;
+        this.powerups[ndx].start();
+    }
+}
 
 Paddle.prototype.getX = function() { return this.shape.pos.x; };
 Paddle.prototype.getY = function() { return this.shape.pos.y; };
@@ -64,7 +70,7 @@ Paddle.prototype.hitBall = function() {
 };
 
 Paddle.prototype.update = function() {
-	if (this.getY() + this.dy >= 0 && this.getY() + this.getHeight() + this.dy <= canvas.height) {
+	if (this.getY() + this.dy >= 0 && this.getY() + this.getHeight() + this.dy <= gameSize.height) {
     	this.moveY(this.dy);
     	this.dy *= 0.6;
 	}

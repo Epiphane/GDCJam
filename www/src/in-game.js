@@ -8,6 +8,8 @@ function InGame() {
     this.timeToGetPowerup = 100;
 
     this.experience = [90, 90];
+    this.expWidth = [0, 0];
+    this.powerups = [[], []];
 }
 
 InGame.prototype.init = function() {
@@ -16,11 +18,14 @@ InGame.prototype.init = function() {
     var ballSize = 20;
 
     // "Entities"
-    this.player1 = new Paddle(distFromEdge, canvas.height / 2, initialSize.w, initialSize.h);
-    this.player2 = new Paddle(canvas.width - distFromEdge, canvas.height / 2, initialSize.w, initialSize.h);
-    this.ball = new Ball(canvas.width / 2 - ballSize / 2,
-                         canvas.height / 2 - ballSize / 2,
+    this.player1 = new Paddle(distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
+    this.player2 = new Paddle(gameSize.width - distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
+    this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
+                         gameSize.height / 2 - ballSize / 2,
                          ballSize, 10);
+
+    this.player1.setPowerups(this.powerups[0]);
+    this.player2.setPowerups(this.powerups[1]);
 
     this.powerupChoices = [];
     this.powerupChoice = {
@@ -147,37 +152,38 @@ InGame.prototype.update = function() {
 };
 
 InGame.prototype.drawExperiences = function() {
-    // Player 1
-    var grd = context.createLinearGradient(0.000, 150.000, canvas.width / 2 - 100, 150.000);
-      
-    // Add colors
-    grd.addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
-    grd.addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-    grd.addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-    grd.addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
+    var grds = [
+        context.createLinearGradient(0.000, 150.000, gameSize.width / 2 - 100, 150.000),
+        context.createLinearGradient(gameSize.width / 2 + 100, 150.000, gameSize.width, 150.000)
+    ];
+    grds[0].addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
+    grds[0].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+    grds[0].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+    grds[0].addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
 
-    // Fill with gradient
-    context.fillStyle = grd;
+    grds[1].addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
+    grds[1].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+    grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+    grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
+
 
     var padding = 20;
-    var expBarWidth = canvas.width / 2 - (2 * padding + 50);
-    // context.fillStyle = "rgb(255, 100, 100)";
-    context.fillRect(padding, padding, expBarWidth * this.experience[0] / 100, padding * 2);
+    var expBarWidth = gameSize.width / 2 - (2 * padding + 50);
 
-    // Player 2
-    var grd = context.createLinearGradient(canvas.width / 2 + 100, 150.000, canvas.width, 150.000);
-      
-    // Add colors
-    grd.addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
-    grd.addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-    grd.addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-    grd.addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
+    for(var i = 0; i < 2; i ++) {
+        // Fill with gradient
+        if (this.expWidth[i] < this.experience[i])
+            this.expWidth[i] ++;
+        if (this.expWidth[i] > this.experience[i])
+            this.expWidth[i] -= 2;
 
-    // Fill with gradient
-    context.fillStyle = grd;
-
-    var p2Width = expBarWidth * this.experience[1] / 100;
-    context.fillRect(canvas.width - padding - p2Width, padding, p2Width, padding * 2);
+        var p2Width = expBarWidth * this.expWidth[i] / 100;
+        context.fillStyle = grds[i];
+        if (i === 0)
+            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, padding * 2);
+        else
+            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, padding * 2);
+    }
 };
 
 InGame.prototype.draw = function(context) {
@@ -188,7 +194,7 @@ InGame.prototype.draw = function(context) {
     context.fillStyle = "white";
     context.font = "50px Poiret One";
     var scoreWidth = context.measureText(scores).width;
-    context.fillText(scores, (canvas.width / 2) - (scoreWidth / 2), 50);
+    context.fillText(scores, (gameSize.width / 2) - (scoreWidth / 2), 50);
 
     this.player1.draw(context);
     this.player2.draw(context);
@@ -217,13 +223,13 @@ InGame.prototype.draw = function(context) {
             context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
             context.font = fontSize + "pt Arial Black";
             var textSize = context.measureText(text);
-            context.fillText(text, (canvas.width / 2) - (textSize.width / 2),
-                                   (canvas.height / 2) + fontSize / 2);
+            context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
+                                   (gameSize.height / 2) + fontSize / 2);
         }
     }
 
     context.restore();
-    
+
     // Draw powerupChoices!
     for (var i = 0; i < this.powerupChoices.length; i ++) {
         this.powerupChoices[i].draw(context);
