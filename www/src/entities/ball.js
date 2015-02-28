@@ -7,6 +7,7 @@ function Ball(x, y, radius, speed) {
     var widthOfAngle = Math.PI / 2;
     var angle = Math.random() * widthOfAngle - widthOfAngle / 2;
 
+    this.win = 0;
     this.shape = new SAT.Circle(new SAT.Vector(x, y), radius);
 
     this.velocity = {
@@ -33,35 +34,44 @@ Ball.prototype.update = function(game) {
     this.moveX(this.velocity.x);
     this.moveY(this.velocity.y);
 
-    if (this.getY() - this.getSize() <= 0) {
-        flipY(this.getY() - this.getSize());
+    if (this.getX() + this.getSize() <= 0) {
+        this.win = 2;
     }
-    else if (this.getY() + this.getSize() >= canvas.height) {
-        flipY(this.getY() + this.getSize() - canvas.height);
-    }
-
-    // Check for paddle collisions
-    var collision = new SAT.Response();
-    // Player 1
-    if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
-        this.shape.pos.x += collision.overlapV.x * 2;
-        if (collision.overlapV.x)
-            this.velocity.x *= -1;
-
-        this.shape.pos.y += collision.overlapV.y * 2;
-        if (collision.overlapV.y)
-            this.velocity.y *= -1;
+    else if (this.getX() - this.getSize() >= canvas.width) {
+        this.win = 1;
     }
 
-    // Player 2
-    if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
-        if (collision.overlapV.x) {
-            this.shape.pos.x += collision.overlapV.x * 2;
-            this.velocity.x *= -1;
+    if (!this.win) {
+        if (this.getY() - this.getSize() <= 0) {
+            flipY(this.getY() - this.getSize());
         }
-        else {
-            this.velocity.y *= -1;
+        else if (this.getY() + this.getSize() >= canvas.height) {
+            flipY(this.getY() + this.getSize() - canvas.height);
+        }
+
+        // Check for paddle collisions
+        var collision = new SAT.Response();
+        // Player 1
+        if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
+            this.shape.pos.x += collision.overlapV.x * 2;
+            if (collision.overlapV.x)
+                this.velocity.x *= -1;
+
             this.shape.pos.y += collision.overlapV.y * 2;
+            if (collision.overlapV.y)
+                this.velocity.y *= -1;
+        }
+
+        // Player 2
+        if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
+            if (collision.overlapV.x) {
+                this.shape.pos.x += collision.overlapV.x * 2;
+                this.velocity.x *= -1;
+            }
+            else {
+                this.velocity.y *= -1;
+                this.shape.pos.y += collision.overlapV.y * 2;
+            }
         }
     }
 };
