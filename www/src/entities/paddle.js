@@ -40,9 +40,15 @@ Paddle.prototype.setWidth = function(width) { this.width = width; };
 Paddle.prototype.setHeight = function(height) { this.height = height; };
 
 Paddle.prototype.addPowerup = function(powerup) {
-    this.powerups.push(powerup);
-
     powerup.start();
+    powerup.action();
+    if (powerup.uses <= 0) {
+    	powerup.done();
+    }
+    else {
+    	this.powerups.push(powerup);
+    }
+    // console.log(powerup.uses);
 };
 
 Paddle.prototype.accelerate = function(dy) {
@@ -77,6 +83,11 @@ Paddle.prototype.update = function() {
 	else {
 		this.dy = 0;
 	}
+
+    if (this.getY() <= 0)
+        this.setY(0);
+    if (this.getY() + this.getHeight() > gameSize.height)
+        this.setY(gameSize.height - this.getHeight());
 
     if (this.bounceTime)
         this.jiggle();

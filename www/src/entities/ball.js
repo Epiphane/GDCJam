@@ -14,7 +14,8 @@ function Ball(x, y, radius, speed) {
         x: speed * Math.cos(angle) * (direction ? 1 : -1),
         y: speed * Math.sin(angle),
     }
-    this.speed = speed;
+    this.speedMult = 1;
+    this.baseSpeed = speed;
 
     this.bounceTime = 0;
     this.bounceDuration = 10;
@@ -34,14 +35,17 @@ Ball.prototype.setSize = function(r) { this.shape.r = r; };
 
 Ball.prototype.bounce = function() {
     this.bounceTime = this.bounceDuration;
+
+    this.baseSpeed += 0.5;
+    this.speedMult = 1;
 };
 
 Ball.prototype.normalizeVelocity = function() {
     var currentSpeed = Math.sqrt(this.velocity.x * this.velocity.x + 
                                  this.velocity.y * this.velocity.y);
 
-    this.velocity.x *= this.speed / currentSpeed;
-    this.velocity.y *= this.speed / currentSpeed;
+    this.velocity.x *= this.speedMult * this.baseSpeed / currentSpeed;
+    this.velocity.y *= this.speedMult * this.baseSpeed / currentSpeed;
 };
 
 function playRandomBounce() {
@@ -121,14 +125,14 @@ Ball.prototype.update = function(game) {
                 this.moveY(collision.overlapV.y);
             }
 
+            this.bounce();
+
             var dy = this.getY() - (game.player1.getY() + game.player1.getHeight() / 2);
             this.velocity.y = 16 * dy / game.player1.getHeight();
             this.normalizeVelocity();
 
             game.player1.hitBall();
             game.giveExperience(0);
-
-            this.bounce();
         }
 
         // Player 2
@@ -143,20 +147,32 @@ Ball.prototype.update = function(game) {
                 this.moveY(collision.overlapV.y);
             }
 
+            this.bounce();
+
             var dy = this.getY() - (game.player2.getY() + game.player2.getHeight() / 2);
             this.velocity.y = 16 * dy / game.player2.getHeight();
             this.normalizeVelocity();
 
             game.player2.hitBall();
             game.giveExperience(1);
-
-            this.bounce();
         }
     }
 
-    // Create trail!
-    this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                    Math.atan(this.velocity.y / this.velocity.x), 60));
+    var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
+    //console.log(speed);
+
+    if (this.speedMult > 1) {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1 / 5));
+    }
+    else if (this.speedMult < 1) {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60, 200/360, 250/360));
+    }
+    else {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60));
+    }
 
     for(var t = 0; t < this.trail.length; t ++) {
         this.trail[t].update();
@@ -189,7 +205,8 @@ Ball.prototype.draw = function(context) {
 
     context.beginPath();
     context.arc(0, 0, this.getSize(), 0, 2 * Math.PI, false);
-    context.fillStyle = "rgba(0, 255, 255, 1)";
+    var rgb = HSVtoRGB(hue, 1, 1);
+    context.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 1)";
     context.fill();
 
     // restore to original state
