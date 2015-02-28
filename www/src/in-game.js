@@ -7,7 +7,7 @@ function InGame() {
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [0, 0];
+    this.experience = [90, 90];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -75,6 +75,8 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
     this.powerupChoices = [];
     this.powerupChoiceHeight = 0;
 
+    
+
     if (this.powerupChoice.player === 0)
         this.player1.addPowerup(new PowerupCstr(this, this.player1));
     else
@@ -131,11 +133,19 @@ InGame.prototype.update = function() {
         }
         
         if (this.powerupChoiceHeight > this.timeToGetPowerup) {
-            this.selectPowerup(this.powerupChoices[0].powerup);
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+           this.selectPowerup(this.powerupChoices[0].powerup);
         }
 
         if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
-            this.selectPowerup(this.powerupChoices[1].powerup);
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+          this.selectPowerup(this.powerupChoices[1].powerup);
         }
     }
 

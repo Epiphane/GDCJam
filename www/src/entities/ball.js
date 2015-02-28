@@ -48,9 +48,7 @@ Ball.prototype.normalizeVelocity = function() {
     this.velocity.y *= this.speedMult * this.baseSpeed / currentSpeed;
 };
 
-function playRandomBounce() {
-
-
+function playRandomBounce(onFire) {
     var rand = Math.floor(Math.random() * 4);
     if (rand == 0) {
         bounce1.play();
@@ -115,7 +113,7 @@ Ball.prototype.update = function(game) {
         var collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
-            playRandomBounce();
+            playRandomBounce(this.speedMult);
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);
@@ -137,7 +135,7 @@ Ball.prototype.update = function(game) {
 
         // Player 2
         if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
-            playRandomBounce();
+            playRandomBounce(this.speedMult);
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);
