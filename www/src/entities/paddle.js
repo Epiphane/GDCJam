@@ -17,6 +17,11 @@ function Paddle(x, y, width, height) {
     this.exp = 50;
 }
 
+Paddle.prototype.updateShape = function() {
+    this.shape = new SAT.Box(new SAT.Vector(this.getX(), this.getY()), 
+                            this.getWidth(), this.getHeight()).toPolygon();
+};
+
 Paddle.prototype.getX = function() { return this.shape.pos.x; };
 Paddle.prototype.getY = function() { return this.shape.pos.y; };
 Paddle.prototype.getWidth = function() { return this.width; };
@@ -27,6 +32,12 @@ Paddle.prototype.setX = function(x) { this.shape.pos.x = x; };
 Paddle.prototype.setY = function(y) { this.shape.pos.y = y; };
 Paddle.prototype.setWidth = function(width) { this.width = width; };
 Paddle.prototype.setHeight = function(height) { this.height = height; };
+
+Paddle.prototype.addPowerup = function(powerup) {
+    this.powerups.push(powerup);
+
+    powerup.start();
+};
 
 Paddle.prototype.accelerate = function(dy) {
     this.dy += dy;
@@ -39,6 +50,19 @@ Paddle.prototype.accelerate = function(dy) {
 	}
 };
 
+Paddle.prototype.hitBall = function() {
+    this.bounceTime = 40;
+
+    for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
+        this.powerups[ndx].action();
+
+        if (this.powerups[ndx].uses <= 0) {
+            this.powerups[ndx].done();
+            this.powerups.splice(ndx--, 1);
+        }
+    }
+};
+
 Paddle.prototype.update = function() {
 	if (this.getY() + this.dy >= 0 && this.getY() + this.getHeight() + this.dy <= canvas.height) {
     	this.moveY(this.dy);
@@ -47,6 +71,9 @@ Paddle.prototype.update = function() {
 	else {
 		this.dy = 0;
 	}
+
+    if (this.bounceTime)
+        this.jiggle();
 };
 
 Paddle.prototype.draw = function(context) {
