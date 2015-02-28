@@ -30,6 +30,9 @@ Powerup.prototype.action = function() {
 // dx is a percentage: 0 = at the paddle, 1 = at the enemy paddle
 // dy is a percentage: 0 = at the paddle, 1 = across the screen
 Powerup.prototype.approach = function(dx, dy) {};
+// dx is a percentage: 1 = at the paddle, 0 = at the enemy paddle
+// dy is a percentage: 1 = at the paddle, 0 = across the screen
+Powerup.prototype.moveAway = function(dx, dy) {};
 Powerup.prototype.done = function() {};
 
 (function() {

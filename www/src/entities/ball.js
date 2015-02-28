@@ -155,10 +155,8 @@ Ball.prototype.update = function(game) {
             game.giveExperience(1);
         }
 
-        if (this.velocity.x < 0)
-            game.player1.approach(this.getX(), this.getY());
-        if (this.velocity.x > 0)
-            game.player2.approach(this.getX(), this.getY());
+        game.player1.ballDist(this.getX(), this.getY(), this.velocity.x < 0);
+        game.player1.ballDist(this.getX(), this.getY(), this.velocity.x > 0);
 
         var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
         //console.log(speed);

@@ -75,12 +75,15 @@ Paddle.prototype.hitBall = function() {
     }
 };
 
-Paddle.prototype.approach = function(ballX, ballY) {
+Paddle.prototype.ballDist = function(ballX, ballY, approaching) {
     var dx = Math.abs(ballX - this.getX() + this.getWidth() / 2) / gameSize.width;
     var dy = Math.abs(ballY - this.getY() + this.getHeight() / 2) / gameSize.height;
 
     for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
-        this.powerups[ndx].approach(dx, dy);
+        if (approaching)
+            this.powerups[ndx].approach(dx, dy);
+        else
+            this.powerups[ndx].moveAway(dx, dy);
     }
 };
 
