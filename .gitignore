@@ -4,3 +4,5 @@ intelxdk.config.ios.xml
 intelxdk.config.windows8.xml
 *.mobileprovision
 *.xdke
+
+*.swp
