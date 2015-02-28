@@ -35,7 +35,7 @@ Paddle.prototype.accelerate = function(dy) {
 Paddle.prototype.update = function() {
     this.moveY(this.dy);
 
-    this.dy *= 0.1;
+    this.dy *= 0.4;
 };
 
 Paddle.prototype.draw = function(context) {

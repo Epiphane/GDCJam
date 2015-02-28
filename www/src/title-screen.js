@@ -19,7 +19,7 @@ function iterateBounciness(rect) {
 }
 
 function drawCenteredText(text, size, color, yPos, swoop) {
-    context.font = size + " Arial Black";
+    context.font = size + " Arial";
     context.fillStyle = color;
 
     var textLength = context.measureText(text).width;

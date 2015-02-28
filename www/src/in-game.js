@@ -1,9 +1,8 @@
 function InGame() {
     // Initial variables
-    this.speed = 8;
+    this.speed = 10;
     this.p1Score = 0;
     this.p2Score = 0;
-    this.pause = false;
 }
 
 InGame.prototype.init = function() {
@@ -17,6 +16,10 @@ InGame.prototype.init = function() {
     this.ball = new Ball(canvas.width / 2 - ballSize / 2,
                          canvas.height / 2 - ballSize / 2,
                          ballSize, 10);
+
+    this.pause = true;
+    this.countdown = 4000;
+    this.lastTime = new Date();
 };
 
 /**
@@ -24,12 +27,21 @@ InGame.prototype.init = function() {
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function() {
-    if (this.pause) {
-        if (keyDown[KEYS.SPACE]) {
+    if (this.countdown) {
+        var thisTime = new Date();
+        var dt = thisTime - this.lastTime
+        this.lastTime = thisTime;
+
+        this.countdown -= dt;
+
+        if (this.countdown <= 0) {
+            this.countdown = 0;
             this.pause = false;
         }
-        return;
     }
+
+    if (this.pause)
+        return;
 
     if (keyDown[KEYS.UP] && this.player2.getY() >= 0) {
         this.player2.accelerate(-this.speed);
@@ -63,13 +75,33 @@ InGame.prototype.update = function() {
 
 InGame.prototype.draw = function(context) {
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
-    var scoreWidth = context.measureText(scores).width;
 
     context.fillStyle = "white";
-    context.font = "50px Courier";
+    context.font = "50px Poiret One";
+    var scoreWidth = context.measureText(scores).width;
     context.fillText(scores, (canvas.width / 2) - (scoreWidth / 2), 50);
     this.player1.draw(context);
     this.player2.draw(context);
 
     this.ball.draw(context);
+
+    if (this.countdown > 200) {
+        if (this.countdown < 4000) {
+            var text;
+            if (this.countdown > 1000)
+                text = Math.floor(this.countdown / 1000).toString();
+            else
+                text = 'GO!';
+
+            var timeToNext = (this.countdown % 1000) / 1000;
+            var maxSize = 1000;
+            var fontSize = maxSize - maxSize * timeToNext;
+
+            context.fillStyle = "rgba(255, 255, 255, " + 3 * timeToNext * (1 - timeToNext) + ")";
+            context.font = fontSize + "pt Arial Black";
+            var textSize = context.measureText(text);
+            context.fillText(text, (canvas.width / 2) - (textSize.width / 2),
+                                   (canvas.height / 2) + fontSize / 2);
+        }
+    }
 };
