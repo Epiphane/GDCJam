@@ -92,12 +92,33 @@ InGame.prototype.update = function() {
 
         if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
             this.powerupChoiceHeight += 2;
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+            chooseUPREV.stop();
+            chooseUP.play();
         }
         else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
             this.powerupChoiceHeight -= 2;
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWNREV.stop();
+            chooseDOWN.play();
         }
         else {
             this.powerupChoiceHeight *= 0.8;
+            
+            if (chooseUP.getPercent() > 0) {
+                chooseUPREV.play();
+                chooseUPREV.setPercent(120 - chooseUP.getPercent());
+            }
+
+            if (chooseDOWN.getPercent() > 0) {
+                chooseDOWNREV.play();
+                chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
+            }
+
+            chooseUP.stop();
+            chooseDOWN.stop();
         }
         
         if (this.powerupChoiceHeight > this.timeToGetPowerup) {

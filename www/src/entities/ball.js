@@ -45,6 +45,8 @@ Ball.prototype.normalizeVelocity = function() {
 };
 
 function playRandomBounce() {
+
+
     var rand = Math.floor(Math.random() * 4);
     if (rand == 0) {
         bounce1.play();
