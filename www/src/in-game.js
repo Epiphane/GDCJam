@@ -3,6 +3,8 @@ function InGame() {
     this.speed = 10;
     this.p1Score = 0;
     this.p2Score = 0;
+
+    this.experience = [0, 0];
 }
 
 InGame.prototype.init = function() {
@@ -23,14 +25,19 @@ InGame.prototype.init = function() {
     this.lastTime = new Date();
 };
 
+InGame.prototype.giveExperience = function(player) {
+    this.experience[player] += 10;
+};
+
 /**
  * Main animation loop!  Check for intersection, update rectangle
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function() {
+
     if (this.countdown) {
         var thisTime = new Date();
-        var dt = thisTime - this.lastTime
+        var dt = thisTime - this.lastTime;
         this.lastTime = thisTime;
 
         this.countdown -= dt;
@@ -41,20 +48,21 @@ InGame.prototype.update = function() {
         }
     }
 
-    if (this.pause)
+    if (this.pause) {
         return;
+    }
 
-    if (keyDown[KEYS.UP] && this.player2.getY() >= 0) {
+    if (keyDown[KEYS.UP]) {
         this.player2.accelerate(-this.speed);
     }
-    if (keyDown[KEYS.DOWN] && this.player2.getY() + this.player2.getHeight() <= canvas.height) {
+    if (keyDown[KEYS.DOWN]) {
         this.player2.accelerate(this.speed);
     }
 
-    if (keyDown[KEYS.W] && this.player1.getY() >= 0) {
+    if (keyDown[KEYS.W]) {
         this.player1.accelerate(-this.speed);
     }
-    if (keyDown[KEYS.S] && this.player1.getY() + this.player1.getHeight() <= canvas.height) {
+    if (keyDown[KEYS.S]) {
         this.player1.accelerate(this.speed);
     }
 
@@ -75,17 +83,43 @@ InGame.prototype.update = function() {
 };
 
 InGame.prototype.draw = function(context) {
-    context.save();
-    // context.translate(canvas.width / 2, canvas.height / 2);
-    // context.rotate(Math.PI / 2);
-    // context.translate(-canvas.width / 2, -canvas.height / 2);
-
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
 
     context.fillStyle = "white";
     context.font = "50px Poiret One";
     var scoreWidth = context.measureText(scores).width;
     context.fillText(scores, (canvas.width / 2) - (scoreWidth / 2), 50);
+
+    var grd = context.createLinearGradient(0.000, 150.000, canvas.width / 2 - 100, 150.000);
+      
+    // Add colors
+    grd.addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
+    grd.addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+    grd.addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+    grd.addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
+
+    // Fill with gradient
+    context.fillStyle = grd;
+
+    var padding = 20;
+    var expBarWidth = canvas.width / 2 - (2 * padding + 50);
+    // context.fillStyle = "rgb(255, 100, 100)";
+    context.fillRect(padding, padding, expBarWidth * this.experience[0] / 100, padding * 2);
+
+    var grd = context.createLinearGradient(canvas.width / 2 + 100, 150.000, canvas.width, 150.000);
+      
+    // Add colors
+    grd.addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
+    grd.addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+    grd.addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+    grd.addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
+
+    // Fill with gradient
+    context.fillStyle = grd;
+
+    var p2Width = expBarWidth * this.experience[1] / 100;
+    context.fillRect(canvas.width - padding - p2Width, padding, p2Width, padding * 2);
+
     this.player1.draw(context);
     this.player2.draw(context);
 
@@ -116,7 +150,6 @@ InGame.prototype.draw = function(context) {
                                    (canvas.height / 2) + fontSize / 2);
         }
     }
-
 
     context.restore();
 };
