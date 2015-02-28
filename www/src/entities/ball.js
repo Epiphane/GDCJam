@@ -89,6 +89,13 @@ Ball.prototype.update = function(game) {
         this.bounce();
     }.bind(this);
 
+    var flipX = function(off) {
+        this.moveX(-2 * off);
+        this.velocity.x *= -1;
+
+        this.bounce();
+    }.bind(this);
+
     this.moveX(this.velocity.x);
     this.moveY(this.velocity.y);
 
@@ -106,6 +113,16 @@ Ball.prototype.update = function(game) {
         }
         else if (this.getY() + this.getSize() >= gameSize.height) {
             flipY(this.getY() + this.getSize() - gameSize.height);
+            playRandomWall();
+        }
+        else if (this.getX() + this.getSize() >= gameSize.width && game.p2shield) {
+            flipX(this.getX() + this.getSize() - gameSize.width);
+            game.p2shield = false;
+            playRandomWall();
+        }
+        else if (this.getX() - this.getSize() <= 0 && game.p1shield) {
+            flipX(this.getX() - this.getSize());
+            game.p1shield = false;
             playRandomWall();
         }
 

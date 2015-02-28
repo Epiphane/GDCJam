@@ -11,6 +11,13 @@ function Paddle(x, y, width, height) {
     this.dy = 0;
     this.max_dy = 20;
 
+    if (x < gameSize.width / 2) {
+    	this.player = 1;
+    }
+    else {
+    	this.player = 2;
+    }
+
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
 }
 
