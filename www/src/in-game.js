@@ -74,6 +74,11 @@ InGame.prototype.update = function() {
 };
 
 InGame.prototype.draw = function(context) {
+    context.save();
+    // context.translate(canvas.width / 2, canvas.height / 2);
+    // context.rotate(Math.PI / 2);
+    // context.translate(-canvas.width / 2, -canvas.height / 2);
+
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
 
     context.fillStyle = "white";
@@ -97,11 +102,13 @@ InGame.prototype.draw = function(context) {
             var maxSize = 1000;
             var fontSize = maxSize - maxSize * timeToNext;
 
-            context.fillStyle = "rgba(255, 255, 255, " + 3 * timeToNext * (1 - timeToNext) + ")";
+            context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
             context.font = fontSize + "pt Arial Black";
             var textSize = context.measureText(text);
             context.fillText(text, (canvas.width / 2) - (textSize.width / 2),
                                    (canvas.height / 2) + fontSize / 2);
         }
     }
+
+    context.restore();
 };

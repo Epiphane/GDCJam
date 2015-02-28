@@ -14,6 +14,7 @@ function Ball(x, y, radius, speed) {
         x: speed * Math.cos(angle) * (direction ? 1 : -1),
         y: speed * Math.sin(angle),
     }
+    this.speed = speed;
 
     this.bounceTime = 0;
     this.bounceDuration = 10;
@@ -33,7 +34,15 @@ Ball.prototype.setSize = function(r) { this.shape.r = r; };
 
 Ball.prototype.bounce = function() {
     this.bounceTime = this.bounceDuration;
-}
+};
+
+Ball.prototype.normalizeVelocity = function() {
+    var currentSpeed = Math.sqrt(this.velocity.x * this.velocity.x + 
+                                 this.velocity.y * this.velocity.y);
+
+    this.velocity.x *= this.speed / currentSpeed;
+    this.velocity.y *= this.speed / currentSpeed;
+};
 
 Ball.prototype.update = function(game) {
     // Movement and collision
@@ -66,13 +75,18 @@ Ball.prototype.update = function(game) {
         var collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
-            this.shape.pos.x += collision.overlapV.x * 2;
-            if (collision.overlapV.x)
+            if (collision.overlapV.x) {
                 this.velocity.x *= -1;
-
-            this.shape.pos.y += collision.overlapV.y * 2;
-            if (collision.overlapV.y)
+                this.moveX(collision.overlapV.x);
+            }
+            else {
                 this.velocity.y *= -1;
+                this.moveY(collision.overlapV.y);
+            }
+
+            var dy = this.getY() - (game.player1.getY() + game.player1.getHeight() / 2);
+            this.velocity.y = 16 * dy / game.player1.getHeight();
+            this.normalizeVelocity();
 
             this.bounce();
         }
@@ -80,25 +94,29 @@ Ball.prototype.update = function(game) {
         // Player 2
         if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
             if (collision.overlapV.x) {
-                this.shape.pos.x += collision.overlapV.x * 2;
                 this.velocity.x *= -1;
+                this.moveX(collision.overlapV.x);
             }
             else {
                 this.velocity.y *= -1;
-                this.shape.pos.y += collision.overlapV.y * 2;
+                this.moveY(collision.overlapV.y);
             }
+
+            var dy = this.getY() - (game.player2.getY() + game.player2.getHeight() / 2);
+            this.velocity.y = 16 * dy / game.player2.getHeight();
+            this.normalizeVelocity();
 
             this.bounce();
         }
     }
 
     // Create trail!
-    if (this.nextTrail-- <= 0) {
+    // if (this.nextTrail-- <= 0) {
         this.nextTrail = this.trailTimer;
 
         this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                        Math.atan(this.velocity.y / this.velocity.x), 45));
-    }
+                        Math.atan(this.velocity.y / this.velocity.x), 60));
+    // }
 
     for(var t = 0; t < this.trail.length; t ++) {
         this.trail[t].update();
@@ -112,9 +130,10 @@ Ball.prototype.draw = function(context) {
         this.trail[t].draw(context);
     }
 
+    var dt = this.bounceDuration - this.bounceTime;
     scale = {};
     scale.y = 1;
-    scale.x = 1 - 0.5 * Math.sin(2 * Math.PI * (this.bounceDuration - this.bounceTime) / this.bounceDuration);
+    scale.x = 1 - 0.5 * Math.sin(2 * Math.PI * dt / this.bounceDuration);
 
     if (this.bounceTime > 0) {
         this.bounceTime --;
