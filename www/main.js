@@ -66,4 +66,7 @@ function getCanvasCoords(evt) {
     return {x: Math.floor(mx), y: Math.floor(my)};
 }
 
-update();
+document.addEventListener('DOMContentLoaded', update, false);
+
+// update();
+// 

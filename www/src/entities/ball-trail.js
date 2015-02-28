@@ -52,7 +52,7 @@ BallTrail.prototype.getY = function() { return this.shape.pos.y; };
 
 BallTrail.prototype.update = function() {
     this.life --;
-    this.size *= 39 / 40;
+    this.size *= (this.maxLife - 3) / this.maxLife;
 };
 
 BallTrail.prototype.draw = function(context) {
