@@ -125,6 +125,33 @@ var fire2 = new buzz.sound("./asset/sound/fire2", {
     autoplay: false
 });
 
+
+
+var iceChosen = new buzz.sound("./asset/sound/ice-choose", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var ice1 = new buzz.sound("./asset/sound/ice1", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var ice2 = new buzz.sound("./asset/sound/ice2", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var ice3 = new buzz.sound("./asset/sound/ice3", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+
 var ghostChosen = new buzz.sound("./asset/sound/ghost-choose", {
     formats: [ "mp3", "wav" ],
     preload: true,
