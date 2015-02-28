@@ -15,6 +15,8 @@ var Powerup = function(game, player) {
         this.__proto__.start = Powerup.prototype.start;
     if (!this.__proto__.action)
         this.__proto__.action = Powerup.prototype.action;
+    if (!this.__proto__.approach)
+        this.__proto__.approach = Powerup.prototype.approach;
     if (!this.__proto__.done)
         this.__proto__.done = Powerup.prototype.done;
 };
@@ -30,11 +32,17 @@ Powerup.prototype.start = function() {
 Powerup.prototype.action = function() {
     this.uses --;
 };
+// dx is a percentage: 0 = at the paddle, 1 = at the enemy paddle
+// dy is a percentage: 0 = at the paddle, 1 = across the screen
+Powerup.prototype.approach = function(dx, dy) {};
+// dx is a percentage: 1 = at the paddle, 0 = at the enemy paddle
+// dy is a percentage: 1 = at the paddle, 0 = across the screen
+Powerup.prototype.moveAway = function(dx, dy) {};
 Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return FireBall;
+        return IceBall;
     };
 })();
 
@@ -95,13 +103,7 @@ IceBall.prototype.description = "Description";
 IceBall.prototype.icon = makeIcon("expand42");
 FireBall.prototype.sound = fireChosen;
 
-IceBall.prototype.action = function() {
+IceBall.prototype.approach = function(dx, dy) {
     this.game.ball.speedMult = 0.5;
     this.game.ball.normalizeVelocity();
-
-    this.uses--;
-
-    if (!this.uses) {
-        this.game.ball.speed = this.game.speed;
-    }
 };

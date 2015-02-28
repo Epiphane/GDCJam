@@ -1,6 +1,6 @@
 function InGame() {
     // Initial variables
-    this.speed = 15;
+    this.speed = 10;
     this.p1Score = 0;
     this.p2Score = 0;
 
