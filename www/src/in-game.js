@@ -29,6 +29,8 @@ InGame.prototype.init = function() {
         time: 0
     };
 
+    this.powerupChoiceHeight = 0;
+
     this.pause = true;
     this.countdown = 4000;
     this.numSoundsToPlay = 3;
@@ -68,7 +70,9 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
 InGame.prototype.update = function() {
     if (this.pause) {
         if (this.powerupChoices.length > 0) {
-            var upKey, downKey;
+            var upKey, downKey; 
+
+
             if (this.powerupChoice.player === 0) {
                 upKey = KEYS.W;
                 downKey = KEYS.S;
@@ -82,7 +86,7 @@ InGame.prototype.update = function() {
                 if (this.powerupChoice.choice === 0)
                     this.powerupChoice.time ++;
                 else {
-                    this.powerupChoice.choice = 0
+                    this.powerupChoice.choice = 0;
                     this.powerupChoice.time = 0;
                 }
             }
@@ -90,7 +94,7 @@ InGame.prototype.update = function() {
                 if (this.powerupChoice.choice === 1)
                     this.powerupChoice.time ++;
                 else {
-                    this.powerupChoice.choice = 1
+                    this.powerupChoice.choice = 1;
                     this.powerupChoice.time = 0;
                 }
             }
