@@ -103,7 +103,10 @@ Paddle.prototype.draw = function(context) {
             context.drawImage(this.powerups[ndx].__proto__.icon, 
                               powerupX, gameSize.height - (20 + ICON_WIDTH));
 
-            powerupX += (20 + ICON_WIDTH) * Math.sign(gameSize.width / 2 - this.y);
+            if (gameSize.width / 2 - this.y > 0)
+                powerupX += (20 + ICON_WIDTH);
+            else
+                powerupX -= (20 + ICON_WIDTH);
         }
     }
 };
