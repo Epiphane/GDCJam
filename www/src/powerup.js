@@ -42,12 +42,6 @@ Powerup.prototype.approach = function(dx, dy) {};
 Powerup.prototype.moveAway = function(dx, dy) {};
 Powerup.prototype.done = function() {};
 
-(function() {
-    Powerup.getRandomPowerup = function() {
-        return GhostBall;
-    };
-})();
-
 /* Widen your "bar" */
 
 var WideBar = function() { Powerup.apply(this, arguments); };
@@ -102,7 +96,7 @@ var IceBall = function() {
 IceBall.prototype.constructor = IceBall;
 IceBall.prototype.name = "ICEBALL";
 IceBall.prototype.description = "Description";
-IceBall.prototype.icon = makeIcon("expand42");
+IceBall.prototype.icon = makeIcon("snowflake");
 IceBall.prototype.sound = iceChosen;
 
 var playedIceSound = false;  // Global flags are fun 
@@ -141,7 +135,7 @@ var Shield = function() {
 Shield.prototype.constructor = Shield;
 Shield.prototype.name = "SHIELD";
 Shield.prototype.description = "Description";
-Shield.prototype.icon = makeIcon("expand42");
+Shield.prototype.icon = makeIcon("shield");
 
 Shield.prototype.action = function() {
     if (this.uses === 2) {
@@ -168,3 +162,26 @@ GhostBall.prototype.icon = makeIcon("ghost2");
 GhostBall.prototype.moveAway = function(dx, dy) {
     this.game.ball.opacity = dx;
 };
+
+var AddJuice = function() { 
+    Powerup.apply(this, arguments);
+};
+
+AddJuice.prototype.constructor = AddJuice;
+AddJuice.prototype.name = "Add Juice!";
+AddJuice.prototype.description = "Squeeeeeze";
+AddJuice.prototype.icon = makeIcon("juice");
+
+AddJuice.prototype.moveAway = function(dx, dy) {
+    this.game.ball.opacity = dx;
+};
+
+Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, AddJuice];
+
+(function() {
+    Powerup.getRandomPowerup = function(player) {
+        var ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
+        console.log(Powerup.prototype.available[ndx])
+        return Powerup.prototype.available[ndx];
+    };
+})();
