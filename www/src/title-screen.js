@@ -53,6 +53,7 @@ TitleScreen.prototype.init = function() {
             if (!self.buttonAlreadyBounced) {
                 self.button.bounceTime = 40;
                 self.buttonAlreadyBounced = true;
+                mouseOverSound.play();
             }
         }    
         else {
@@ -63,6 +64,7 @@ TitleScreen.prototype.init = function() {
 
     document.addEventListener("mousedown", function(evt) {
         if (SAT.pointInPolygon(new SAT.Vector(evt.x, evt.y), self.button.shape)) {
+            clickedSound.play();
             self.clickedPlay = true;
         }
     });
