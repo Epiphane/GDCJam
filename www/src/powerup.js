@@ -153,7 +153,5 @@ Shield.prototype.action = function() {
         }
     }
 
-    console.log(this.game.p1shield);
-
     this.uses--;
 };
