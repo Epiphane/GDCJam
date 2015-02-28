@@ -350,12 +350,30 @@ InGame.prototype.draw = function(context) {
         }
     }
     else {
+        if (keyDown[KEYS.SPACE])
+            changeState(new TitleScreen());
+
         if (this.cardFrame % 3 === 0) {
             for (var l = 0; l < this.particles.length; l ++) {
                 this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
             }
             this.cardAlpha *= 0.99;
+
         }
+
+        if (this.cardAlpha < 0.05) {
+            context.fillStyle = "rgba(0, 0, 0, 0.1)";
+            context.fillRect(0, 0, gameSize.width, gameSize.height);
+
+            if (this.particles.length > 0 && Math.random() < 0.3) {
+                this.particles.splice(0, 1);
+
+                if (this.particles.length === 0)
+                    setTimeout(function() {
+                        changeState(new TitleScreen());
+                    }, 1000);
+            }
+        }        
     }
 };
 
