@@ -6,6 +6,9 @@ function Paddle(x, y, width, height) {
     this.height = height;
     this.width = width;
 
+    this.dy = 0;
+    this.max_dy = 20;
+
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
 }
 
@@ -19,6 +22,21 @@ Paddle.prototype.setX = function(x) { this.shape.pos.x = x; };
 Paddle.prototype.setY = function(y) { this.shape.pos.y = y; };
 Paddle.prototype.setWidth = function(width) { this.width = width; };
 Paddle.prototype.setHeight = function(height) { this.height = height; };
+
+Paddle.prototype.accelerate = function(dy) {
+    this.dy += dy;
+
+    if (this.dy > this.max_dy)
+        this.dy = this.max_dy;
+    if (this.dy < -this.max_dy)
+        this.dy = -this.max_dy
+};
+
+Paddle.prototype.update = function() {
+    this.moveY(this.dy);
+
+    this.dy *= 0.1;
+};
 
 Paddle.prototype.draw = function(context) {
     context.fillStyle = this.color || "rgb(200, 200, 200)";
