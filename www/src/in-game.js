@@ -54,6 +54,15 @@ InGame.prototype.init = function() {
     this.highscore = 0;
     this.cardFrame = 0;
     this.cardAlpha = 2;
+
+    this.juice = {
+        ballColor: false,
+        ballTrail: false,
+        playerColor: false,
+        ballSpeedup: false,
+        backgroundColor: false,
+        expBarColor: false
+    }
 };
 
 InGame.prototype.giveExperience = function(player) {

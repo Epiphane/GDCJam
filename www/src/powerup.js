@@ -17,6 +17,8 @@ var Powerup = function(game, player) {
         this.__proto__.action = Powerup.prototype.action;
     if (!this.__proto__.approach)
         this.__proto__.approach = Powerup.prototype.approach;
+    if (!this.__proto__.moveAway)
+        this.__proto__.moveAway = Powerup.prototype.moveAway;
     if (!this.__proto__.done)
         this.__proto__.done = Powerup.prototype.done;
 };
