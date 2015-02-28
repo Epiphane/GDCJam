@@ -1,84 +1,174 @@
-/****************************************************************************
- Copyright (c) 2010-2012 cocos2d-x.org
- Copyright (c) 2008-2010 Ricardo Quesada
- Copyright (c) 2011      Zynga Inc.
-
- http://www.cocos2d-x.org
-
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
- ****************************************************************************/
-var cocos2dApp = cc.Application.extend({
-    // `this.config` holds the configuration defined in www/cocos2d.js
-    config:document['ccConfig'],
-    // Constructor of the game application
-    ctor:function (scene) {
-        this._super();
-        this.startScene = scene;
-        // init debug setting in Cocos2d
-        cc.COCOS2D_DEBUG = this.config['COCOS2D_DEBUG'];
-        cc.initDebugSetting();
-        // setup game stage with canvas element specified by ccConfig.tag
-        cc.setup(this.config['tag']);
-        // Finish launching
-        cc.AppController.shareAppController().didFinishLaunchingWithOptions();
-    },
-    applicationDidFinishLaunching:function () {
-        // initialize director
-        var director = cc.Director.getInstance();
-        var designSize = cc.size(800, 480);
-
-        // set file search path to "asset"
-        var searchPaths = [];
-        searchPaths.push("asset");
-        cc.FileUtils.getInstance().setSearchPaths(searchPaths);
-
-        /**
-         * Sets the resolution policy with designed view size in points.
-         * The resolution policy include: 
-         * [1] EXACT_FIT       Fill screen by stretch-to-fit: if the design resolution ratio of width to height is different from the screen resolution ratio, your game view will be stretched.
-         * [2] NO_BORDER       Full screen without black border: if the design resolution ratio of width to height is different from the screen resolution ratio, two areas of your game view will be cut.
-         * [3] SHOW_ALL        Full screen with black border: if the design resolution ratio of width to height is different from the screen resolution ratio, two black borders will be shown.
-         * [4] FIXED_HEIGHT    Scale the content's height to screen's height and proportionally scale its width
-         * [5] FIXED_WIDTH     Scale the content's width to screen's width and proportionally scale its height
-         * See [official documentation](https://github.com/chukong/cocos-docs/blob/master/manual/framework/html5/v2/resolution-policy-design/en.md) for details.
-         */
-        cc.EGLView.getInstance().setDesignResolutionSize(designSize.width, designSize.height, cc.RESOLUTION_POLICY.SHOW_ALL);
-        // This is only useful if the game is run in browser
-        cc.EGLView.getInstance().resizeWithBrowserSize(true);
-
-        // turn on display FPS
-        director.setDisplayStats(this.config['showFPS']);
-
-        // set FPS. the default value is 1.0/60 if you don't call this
-        director.setAnimationInterval(1.0 / this.config['frameRate']);
-
-        // load resources defined in g_resources
-        // see definition of g_resources in www/src/resource.js
-        cc.LoaderScene.preload(g_resources, function () {
-            director.replaceScene(new this.startScene());
-        }, this);
-
+/**
+ * Rectangle class.  Origin at (x, y), with specified width and height.
+ *  bounceTime lets us animate bounciness on mouse down.
+ */
+function Rect(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.x2 = function() { return this.x + this.width };
+    this.y2 = function() { return this.y + this.height };
+    this.height = height;
+    this.width = width;
+    this.bounceTime = 0;
+}
+ 
+/**
+ * Circle class defines those funky circles that emanate out from
+ *  where an intersection happens.
+ */
+function Circle(x, y, radius, alpha) {
+    this.x = x;
+    this.y = y;
+    this.radius = 40;
+    this.alpha = 0.4;
+}
+ 
+/**
+ * rectIntersection takes in two rectangle objects and determines whether they
+ *  intersect.
+ *
+ * If they intersect, this function returns the rectangle that represents the area
+ *  they intersect. Otherwise, it returns null.
+ */
+function rectIntersection(rectA, rectB) {
+    var intersectTop    = Math.max(rectA.y,    rectB.y);
+    var intersectRight  = Math.min(rectA.x2(), rectB.x2());
+    var intersectBottom = Math.min(rectA.y2(), rectB.y2());
+    var intersectLeft   = Math.max(rectA.x,    rectB.x);
+ 
+    var intersectWidth  = intersectRight - intersectLeft;
+    var intersectHeight = intersectBottom - intersectTop;
+ 
+    if (intersectWidth > 0 && intersectHeight > 0) {
+        return new Rect(intersectLeft, intersectTop, intersectWidth, intersectHeight);
+    }
+    return null;
+}
+ 
+/**
+ * rectContainsPoint returns true if the specified rectangle contains the point,
+ *  false otherwise.
+ */
+function rectContainsPoint(rect, point) {
+    if (point.x > rect.x && point.x < rect.x2() &&
+        point.y > rect.y && point.y < rect.y2() ) {
         return true;
     }
-});
-
-// Create an instance of Cocos2d game app.
-// See www/src/myApp.js for definition of MyScene.
-var myApp = new cocos2dApp(MyScene);
+    return false;
+}
+ 
+// Set up the canvas
+var canvas =  document.getElementById("game-canvas");
+var canvasWidth = canvas.getBoundingClientRect().width;
+var canvasHeight = canvas.getBoundingClientRect().height;
+canvasWidth = canvas.width  = window.innerWidth;
+canvasHeight = canvas.height = window.innerHeight - 4;
+var context = canvas.getContext("2d");
+canvas.onselectstart = function() { return false; } // Fix weird cursor problems
+ 
+// Which rectangle is the user dragging (if any?)
+var draggingRect = null;
+var draggingTarget = null;
+var wasIntersecting = false;
+ 
+var rect1 = new Rect(10, 10, 50, 50);
+var rect2 = new Rect(60, 100, 160, 220);
+ 
+var circles = [];
+ 
+/** Draw the specified rect on screen with specified color. */
+function drawRect(rect, color) {
+    // console.log(rect)
+    context.fillStyle = color;
+    context.fillRect(rect.x, rect.y, rect.width, rect.height);
+}
+ 
+/** 
+ * Rectangles bounce when you click on em.  Iterate that animation here.
+ */
+function iterateBounciness(rect) {
+   var bounceFactor = (Math.sin(rect.bounceTime) + 1) * rect.bounceTime * 0.15;
+   if (rect.bounceTime > 0) {
+       rect.bounceTime--;
+   }
+ 
+   var bouncedRect = new Rect(0, 0, 0, 0);
+   bouncedRect.x = rect.x - bounceFactor;
+   bouncedRect.y = rect.y - bounceFactor;
+   bouncedRect.width  = rect.width  + bounceFactor * 2;
+   bouncedRect.height = rect.height + bounceFactor * 2;
+   return bouncedRect;
+}
+ 
+/**
+ * Animate the circles that emanate out from intersections
+ */
+function iterateCircles() {
+    for (var ndx = circles.length - 1; ndx >= 0; ndx--) {
+        circles[ndx].radius += 2;
+        circles[ndx].alpha -= 0.03;
+ 
+        context.beginPath();
+        context.arc(circles[ndx].x, circles[ndx].y, 
+                    circles[ndx].radius, 0, 2*Math.PI, false);
+        context.fillStyle = "rgba(255, 255, 255, " + circles[ndx].alpha + ")";
+        context.fill();
+ 
+        if (circles[ndx].alpha < 0) {
+            circles.splice(ndx, 1);
+        }
+    }
+}
+ 
+/**
+ * Main animation loop!  Check for intersection, update rectangle
+ *  objects, and draw to screen.
+ */
+function update() {
+    requestAnimFrame(update);
+ 
+    if (draggingRect != null && draggingTarget != null) {
+        draggingRect.x += (draggingTarget.x - draggingRect.x) / 2;
+        draggingRect.y += (draggingTarget.y - draggingRect.y) / 2;
+    }
+ 
+    var bouncedRect1 = iterateBounciness(rect1);    
+    var bouncedRect2 = iterateBounciness(rect2);    
+ 
+    var intersection = rectIntersection(bouncedRect1, bouncedRect2);
+    if (intersection != null && !wasIntersecting) {
+        var newCircle = new Circle(intersection.x + intersection.width/2,
+                                   intersection.y + intersection.height/2);
+        circles.push(newCircle);
+        wasIntersecting = true;
+    }
+ 
+    if (intersection == null) {
+        wasIntersecting = false;
+    }
+ 
+    context.clearRect(0 , 0 , canvasWidth, canvasHeight);
+ 
+    drawRect(bouncedRect1, "rgb(255, 170, 170)");
+    drawRect(bouncedRect2, "rgb(212, 106, 106)");
+ 
+    if (intersection != null) {
+        drawRect(intersection, "rgb(4, 154, 4)");
+    }
+ 
+    iterateCircles();
+}
+ 
+/**
+ * Returns a handy point object in the local coordinate
+ *  space of the canvas
+ */
+function getCanvasCoords(evt) {
+    var canvasRect = canvas.getBoundingClientRect();
+    var mx = evt.x - canvasRect.left;
+    var my = evt.y - canvasRect.top;
+ 
+    return {x: Math.floor(mx), y: Math.floor(my)};
+}
+ 
+update();

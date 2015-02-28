@@ -30,8 +30,18 @@ var MyLayer = cc.Layer.extend({
     helloLabel:null,
     circle:null,
     sprite:null,
-
-    init:function () {
+    byebye: function() {
+        var scene = cc.Director.getInstance().getRunningScene();
+        scene.removeChild(scene.layer);
+    },
+    ctor: function() {
+        this._super();
+        this.setKeyboardEnabled(true);
+    },
+    onKeyDown : function(key) {
+       cc.log(key);
+    },
+    init:function() {
 
         // 1. super init first
         this._super();
@@ -48,9 +58,7 @@ var MyLayer = cc.Layer.extend({
             // button pressed image
             s_CloseSelected,
             // button pressed handler
-            function () {
-                cc.log("close");
-            },this);
+            this.byebye, this);
         // set anchor point to the center of the item
         closeItem.setAnchorPoint(0.5, 0.5);
         // create a menu with closeItem
@@ -67,7 +75,7 @@ var MyLayer = cc.Layer.extend({
         // 3. add your codes below...
         // add a label shows "Hello World"
         // create and initialize a label
-        this.helloLabel = cc.LabelTTF.create("Hello World", "Impact", 38);
+        this.helloLabel = cc.LabelTTF.create("PongTron", "Calibri", 38);
         // position the label on the center of the screen
         this.helloLabel.setPosition(size.width / 2, size.height - 40);
         // add the label as a child to this layer
@@ -88,8 +96,15 @@ var MyScene = cc.Scene.extend({
     onEnter:function () {
         this._super();
         // create and add a layer to the scene
-        var layer = new MyLayer();
-        this.addChild(layer);
-        layer.init();
+        this.layer = new MyLayer();
+        this.addChild(this.layer);
+        this.layer.init();
+    },
+    startGame: function() {
+        this.removeChild(this.layer);
+        // create and add a layer to the scene
+        this.layer = new PongLayer();
+        this.addChild(this.layer);
+        this.layer.init();
     }
 });
