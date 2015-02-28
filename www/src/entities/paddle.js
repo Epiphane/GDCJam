@@ -18,6 +18,10 @@ function Paddle(x, y, width, height) {
     	this.player = 2;
     }
 
+    this.juice = {
+        color: false
+    };
+
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
 }
 
@@ -108,7 +112,7 @@ Paddle.prototype.update = function() {
     if (this.getY() + this.getHeight() > gameSize.height)
         this.setY(gameSize.height - this.getHeight());
 
-    if (this.bounceTime)
+    if (this.bounceTime && this.juice.bounce)
         this.jiggle();
 };
 
@@ -118,7 +122,14 @@ Paddle.prototype.draw = function(context) {
 	context.translate(this.getX() + this.width / 2, this.getY() + this.height / 2);
 	context.scale(this.bounceFactor, this.bounceFactor);
 
-    context.fillStyle = this.color || "rgb(200, 200, 200)";
+    context.fillStyle = "rgb(200, 200, 200)";
+    if (this.juice.color) {
+        if (this.player === 1)
+            context.fillStyle = "rgb(255, 0, 0)";
+        else
+            context.fillStyle = "rgb(0, 0, 255)";
+    }
+
     context.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
     context.restore();
     
