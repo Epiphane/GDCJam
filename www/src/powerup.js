@@ -1,7 +1,7 @@
 function makeIcon(name) {
     var imageObj = new Image();
 
-    imageObj.src = '/asset/icons/png/' + name + '.png';
+    imageObj.src = './asset/icons/png/' + name + '.png';
     return imageObj;
 }
 

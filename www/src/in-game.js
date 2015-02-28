@@ -36,10 +36,10 @@ InGame.prototype.init = function() {
     this.powerupChoice = {
         player: -1,
         choice: 0,
-        time: 0
     };
 
-    this.powerupChoiceHeight = 0;
+    this.powerupChoiceHeight = 0; // Goes UP when the user holds W/Up until it reaches the timeToGetPowerup
+    // If you hold down this thing goes NEGATIVE yo
 
     this.pause = true;
     this.countdown = 4000;
@@ -64,6 +64,7 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
     // Reset powerup stuff
     this.experience[this.powerupChoice.player] = 0;
     this.powerupChoices = [];
+    this.powerupChoiceHeight = 0;
 
     if (this.powerupChoice.player === 0)
         this.player1.addPowerup(new PowerupCstr(this, this.player1));
@@ -89,25 +90,22 @@ InGame.prototype.update = function() {
             downKey = KEYS.DOWN;
         }
 
-        if (keyDown[upKey]) {
-            if (this.powerupChoice.choice === 0)
-                this.powerupChoice.time ++;
-            else {
-                this.powerupChoice.choice = 0
-                this.powerupChoice.time = 0;
-            }
+        if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
+            this.powerupChoiceHeight += 2;
         }
-        if (keyDown[downKey]) {
-            if (this.powerupChoice.choice === 1)
-                this.powerupChoice.time ++;
-            else {
-                this.powerupChoice.choice = 1
-                this.powerupChoice.time = 0;
-            }
+        else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
+            this.powerupChoiceHeight -= 2;
+        }
+        else {
+            this.powerupChoiceHeight *= 0.8;
+        }
+        
+        if (this.powerupChoiceHeight > this.timeToGetPowerup) {
+            this.selectPowerup(this.powerupChoices[0].powerup);
         }
 
-        if (this.powerupChoice.time > this.timeToGetPowerup) {
-            this.selectPowerup(this.powerupChoices[this.powerupChoice.choice].powerup);
+        if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
+            this.selectPowerup(this.powerupChoices[1].powerup);
         }
     }
 
@@ -214,46 +212,92 @@ InGame.prototype.drawExperiences = function() {
     }
 };
 
-function drawArrow(fillPercent) {
-	context.save();
+var ARROW_SHAFT_WIDTH = 20;
+var ARROW_TIP_BASE_WIDTH = 40;
+var ARROW_HEAD_LENGTH = 100;
+var ARROW_SHAFT_HEIGHT = 30;
 
-	context.translate(100, 175);
-	context.scale(1.5, 1.5);
+function drawArrow(arrowX, fillPercent, yScale) {
+   // FILL ARROW
+    context.save();
+    
+	context.translate(arrowX, gameSize.height/2 - yScale * 65);
+    context.scale(1, yScale);
+    
+
+    var clipY = -fillPercent * (ARROW_HEAD_LENGTH + ARROW_SHAFT_HEIGHT) + ARROW_SHAFT_HEIGHT
+    context.rect(-ARROW_SHAFT_WIDTH - ARROW_TIP_BASE_WIDTH,
+                 clipY, 
+                 1000, 
+                 1000);
+    context.clip();
 
     context.beginPath();
-    context.moveTo(-25,  50);
-    context.lineTo(-25, -50);
-    context.lineTo(-40, -50);
-    context.lineTo(  0, -125);  // Arrow point
-    context.lineTo( 40, -50);
-    context.lineTo( 25, -50);
-    context.lineTo( 25,  50);
+    context.moveTo(-ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
+    context.lineTo(-ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo(-ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo(  0, -ARROW_HEAD_LENGTH);  // Arrow point
+    context.lineTo( ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo( ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
+    context.closePath();
+
+    context.fillStyle = "orange";
+    context.fill();
+    context.restore();
+
+    
+    // ARROW OUTLINE
+	context.save();
+
+	context.translate(arrowX, gameSize.height/2 - yScale * 65);
+    context.scale(1, yScale);
+    
+    context.beginPath();
+    context.moveTo(-ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
+    context.lineTo(-ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo(-ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo(  0, -ARROW_HEAD_LENGTH);  // Arrow point
+    context.lineTo( ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo( ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
+    context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
     context.closePath();
 
     context.strokeStyle = "rgb(200, 200, 200)";
     context.lineWidth = 5;
     context.stroke();
-    context.restore();
-}
 
-InGame.prototype.drawPowerupChoice = function() {
+    context.restore();
+ }
+
+InGame.prototype.drawPowerupArrows = function() {
     var arrowX = 0;
     if (this.powerupChoices.length > 0) {
         if (this.powerupChoice.player == 0) {
-            arrowX = 80;
+            arrowX = 150;
         }
         else {
-            arrowX = gameSize.width - 80;
+            arrowX = gameSize.width - 150;
+        }
+
+        var fillHeight = this.powerupChoiceHeight / this.timeToGetPowerup;
+
+        if (fillHeight < 0) {
+            drawArrow(arrowX, -fillHeight, -1);
+            drawArrow(arrowX, 0,            1);
+        }
+        else {
+            drawArrow(arrowX, 0,           -1);
+            drawArrow(arrowX, fillHeight,   1);
         }
     }
-    drawArrow(1);
 }
 
 InGame.prototype.draw = function(context) {
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
 
     this.drawExperiences();
-    this.drawPowerupChoice();
+    this.drawPowerupArrows();
 
     context.fillStyle = "white";
     context.font = "50px Poiret One";
