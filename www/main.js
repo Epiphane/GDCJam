@@ -6,6 +6,9 @@ var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
 
 // State
+currState = new TitleScreen();
+changeState(currState);
+
 var keyDown = {};
 
 document.addEventListener('keydown', function(evt) {
@@ -46,7 +49,10 @@ function changeState(state) {
     currentState.init();
 }
 
-changeState(new InGame());
+function startGame() {
+    changeState(new InGame());
+}
+
  
 /**
  * Returns a handy point object in the local coordinate
