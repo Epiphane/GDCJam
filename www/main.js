@@ -4,8 +4,6 @@ canvas.width  = window.innerWidth;
 canvas.height = window.innerHeight - 4;
 var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
-
-var currentState = InGame();
  
 /**
  * Main animation loop!  Check for intersection, update rectangle
@@ -22,6 +20,8 @@ function changeState(state) {
     currentState = state;
     currentState.init();
 }
+
+changeState(InGame());
  
 /**
  * Returns a handy point object in the local coordinate

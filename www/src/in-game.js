@@ -62,9 +62,6 @@ var draggingRect = null;
 var draggingTarget = null;
 var wasIntersecting = false;
  
-var rect1 = new Rect(10, 10, 50, 50);
-var rect2 = new Rect(60, 100, 160, 220);
- 
 var circles = [];
  
 /** Draw the specified rect on screen with specified color. */
@@ -113,45 +110,35 @@ function iterateCircles() {
  
 var InGame = function() {
     var game = {};
+ 
+    var rect1 = new Rect(10, 10, 50, 50);
+    var rect2 = new Rect(60, 100, 160, 220);
+
+    game.init = function() {
+        document.addEventListener('keydown', function(evt) {
+            console.log(evt);
+        });
+        console.log('hi');
+    };
 
     /**
      * Main animation loop!  Check for intersection, update rectangle
      *  objects, and draw to screen.
      */
-    game.update = function() {     
-        if (draggingRect != null && draggingTarget != null) {
-            draggingRect.x += (draggingTarget.x - draggingRect.x) / 2;
-            draggingRect.y += (draggingTarget.y - draggingRect.y) / 2;
-        }
-     
+    game.update = function() {
+    };
+
+    game.draw = function() {
         var bouncedRect1 = iterateBounciness(rect1);    
-        var bouncedRect2 = iterateBounciness(rect2);    
-     
-        var intersection = rectIntersection(bouncedRect1, bouncedRect2);
-        if (intersection != null && !wasIntersecting) {
-            var newCircle = new Circle(intersection.x + intersection.width/2,
-                                       intersection.y + intersection.height/2);
-            circles.push(newCircle);
-            wasIntersecting = true;
-        }
-     
-        if (intersection == null) {
-            wasIntersecting = false;
-        }
-     
+        var bouncedRect2 = iterateBounciness(rect2);
+
         context.clearRect(0 , 0 , canvas.width, canvas.height);
      
         drawRect(bouncedRect1, "rgb(255, 170, 170)");
         drawRect(bouncedRect2, "rgb(212, 106, 106)");
      
-        if (intersection != null) {
-            drawRect(intersection, "rgb(4, 154, 4)");
-        }
-     
         iterateCircles();
-    }
-    game.draw = function() {};
-    game.init = function() {};
+    };
 
     return game;
 };
