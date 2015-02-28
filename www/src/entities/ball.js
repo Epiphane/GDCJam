@@ -91,7 +91,7 @@ Ball.prototype.update = function(game) {
     if (this.getX() + this.getSize() <= 0) {
         this.win = 2;
     }
-    else if (this.getX() - this.getSize() >= canvas.width) {
+    else if (this.getX() - this.getSize() >= gameSize.width) {
         this.win = 1;
     }
 
@@ -100,8 +100,8 @@ Ball.prototype.update = function(game) {
             flipY(this.getY() - this.getSize());
             playRandomWall();
         }
-        else if (this.getY() + this.getSize() >= canvas.height) {
-            flipY(this.getY() + this.getSize() - canvas.height);
+        else if (this.getY() + this.getSize() >= gameSize.height) {
+            flipY(this.getY() + this.getSize() - gameSize.height);
             playRandomWall();
         }
 

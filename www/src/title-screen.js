@@ -24,7 +24,7 @@ function drawCenteredText(text, size, color, yPos, swoop) {
 
     var textLength = context.measureText(text).width;
 
-    context.fillText(text, canvas.width/2 - textLength/2 + swoop, yPos); 
+    context.fillText(text, gameSize.width/2 - textLength/2 + swoop, yPos); 
 }
 
 
@@ -35,7 +35,7 @@ function TitleScreen() {
     this.clickedPlay = false;
 
     this.button = { 
-        shape: new SAT.Box(new SAT.Vector(canvas.width/2 - 100, canvas.height/2 + 100 - 40 + 2), 200, 50).toPolygon(), 
+        shape: new SAT.Box(new SAT.Vector(gameSize.width/2 - 100, gameSize.height/2 + 100 - 40 + 2), 200, 50).toPolygon(), 
         bounceTime: 0,
         width: 200,
         height: 50,
@@ -48,6 +48,7 @@ TitleScreen.prototype.init = function() {
     var self = this;
 
     document.addEventListener("mousemove", function(evt) {
+        evt = getCanvasCoords(evt);
         if (SAT.pointInPolygon(new SAT.Vector(evt.x, evt.y), self.button.shape)) {
             self.buttonHovered = true;
             if (!self.buttonAlreadyBounced) {
@@ -63,6 +64,7 @@ TitleScreen.prototype.init = function() {
     });
 
     document.addEventListener("mousedown", function(evt) {
+        evt = getCanvasCoords(evt);
         if (SAT.pointInPolygon(new SAT.Vector(evt.x, evt.y), self.button.shape)) {
             clickedSound.play();
             self.clickedPlay = true;
@@ -96,11 +98,11 @@ TitleScreen.prototype.draw = function() {
     context.fillRect(  this.bouncedButton.shape.pos.x + this.swoopValue, this.bouncedButton.shape.pos.y, this.bouncedButton.width, this.bouncedButton.height);
     context.strokeRect(this.bouncedButton.shape.pos.x + this.swoopValue, this.bouncedButton.shape.pos.y, this.bouncedButton.width, this.bouncedButton.height);
 
-    drawCenteredText("JUICY PONG", "40pt", "rgb(255, 170, 170)", canvas.height/2 - 100, -this.swoopValue);
-    drawCenteredText("PLAY", "30pt", "rgb(255, 170, 170)", canvas.height/2 + 100, this.swoopValue);
+    drawCenteredText("JUICY PONG", "40pt", "rgb(255, 170, 170)", gameSize.height/2 - 100, -this.swoopValue);
+    drawCenteredText("PLAY", "30pt", "rgb(255, 170, 170)", gameSize.height/2 + 100, this.swoopValue);
 
     // If the play button is all the way off the screen, WE OUT FOOLS
-    if (this.bouncedButton.shape.pos.x + this.swoopValue > canvas.width) {
+    if (this.bouncedButton.shape.pos.x + this.swoopValue > gameSize.width) {
         startGame();
     }
 };

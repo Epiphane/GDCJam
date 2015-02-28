@@ -1,7 +1,16 @@
+var aspectRatio = 4/3;
+
 // Set up the canvas
 var canvas =  document.getElementById("game-canvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight - 4;
+if (canvas.width / canvas.height > aspectRatio) { // Too wide
+    canvas.width = canvas.height * aspectRatio;
+}
+else { // Too tall
+    canvas.height = canvas.width / aspectRatio;
+}
+gameSize = { width: 1024, height: 768 };
 var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
 
@@ -40,8 +49,14 @@ function update() {
 
     currentState.update();
 
-    context.clearRect(0 , 0 , canvas.width, canvas.height);
+    if (!currentState.gameDone) {
+        context.clearRect(0 , 0 , canvas.width, canvas.height);
+    }
+    context.save();
+    context.scale(canvas.width / 1024, canvas.height / 768);
+
     currentState.draw(context);
+    context.restore();
 }
 
 function changeState(state) {
@@ -61,10 +76,17 @@ function startGame() {
  */
 function getCanvasCoords(evt) {
     var canvasRect = canvas.getBoundingClientRect();
-    var mx = evt.x - canvasRect.left;
-    var my = evt.y - canvasRect.top;
+    var mx = evt.x;// - canvasRect.left;
+    var my = evt.y;// - canvasRect.top;
  
-    return {x: Math.floor(mx), y: Math.floor(my)};
+    // console.log({
+    //     x: Math.floor(mx) * gameSize.width /  canvas.width, 
+    //     y: Math.floor(my) * gameSize.height /  canvas.height
+    // });
+    return {
+        x: Math.floor(mx) * gameSize.width /  canvas.width, 
+        y: Math.floor(my) * gameSize.height /  canvas.height
+    };
 }
 
 document.addEventListener('DOMContentLoaded', update, false);

@@ -1,11 +1,25 @@
+function makeIcon(name) {
+    var imageObj = new Image();
+
+    imageObj.src = '/asset/icons/png/' + name + '.png';
+    return imageObj;
+}
+
 /* Powerup Service */
 var Powerup = function(game, player) {
     this.uses = 6;
     this.game = game;
     this.player = player;
+
+    if (!this.__proto__.start)
+        this.__proto__.start = Powerup.prototype.start;
+    if (!this.__proto__.action)
+        this.__proto__.action = Powerup.prototype.action;
+    if (!this.__proto__.done)
+        this.__proto__.done = Powerup.prototype.done;
 };
-Powerup.name = "Nothing";
-Powerup.description = "You shouldn't be seeing this, you dingus!";
+Powerup.prototype.name = "Nothing";
+Powerup.prototype.description = "You shouldn't be seeing this, you dingus!";
 
 Powerup.prototype.start = function() {};
 Powerup.prototype.action = function() {
@@ -21,12 +35,12 @@ Powerup.prototype.done = function() {};
 
 /* Widen your "bar" */
 
-var WideBar = function() {};
-WideBar.name = "Wide Paddle";
-WideBar.description = "May your paddle be wide and your future be bright!";
+var WideBar = function() { Powerup.apply(this, arguments); };
 
-WideBar.prototype = Powerup.prototype;
 WideBar.prototype.constructor = WideBar;
+WideBar.prototype.name = "Wide Paddle";
+WideBar.prototype.description = "May your paddle be wide and your future be bright!";
+WideBar.prototype.icon = makeIcon("expand42");
 
 WideBar.prototype.start = function() {
     this.originalHeight = this.player.getHeight();
