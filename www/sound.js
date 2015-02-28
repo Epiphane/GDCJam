@@ -80,4 +80,54 @@ var mouseOverSound = new buzz.sound("./asset/sound/mouseOver", {
     autoplay: false
 });
 
+var chooseUP = new buzz.sound("./asset/sound/chooseUP", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var chooseDOWN = new buzz.sound("./asset/sound/chooseDOWN", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var chooseUPREV = new buzz.sound("./asset/sound/chooseUP-REV", {
+    formats: [ "mp3"],
+    preload: true,
+    autoplay: false
+});
+
+var chooseDOWNREV = new buzz.sound("./asset/sound/chooseDOWN-REV", {
+    formats: [ "mp3"],
+    preload: true,
+    autoplay: false
+});
+
+
+/** POWER UPS **/
+
+var fireChosen = new buzz.sound("./asset/sound/fire-choose", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var fire1 = new buzz.sound("./asset/sound/fire1", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var fire2 = new buzz.sound("./asset/sound/fire2", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var ghostChosen = new buzz.sound("./asset/sound/ghost-choose", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
 

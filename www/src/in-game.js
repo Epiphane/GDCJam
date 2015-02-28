@@ -4,10 +4,13 @@ function InGame() {
     this.p1Score = 0;
     this.p2Score = 0;
 
+    this.p1shield = false;
+    this.p2shield = false;
+
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [90, 0];
+    this.experience = [90, 90];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -84,6 +87,8 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
     this.powerupChoices = [];
     this.powerupChoiceHeight = 0;
 
+    
+
     if (this.powerupChoice.player === 0)
         this.player1.addPowerup(new PowerupCstr(this, this.player1));
     else
@@ -110,20 +115,49 @@ InGame.prototype.update = function() {
 
         if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
             this.powerupChoiceHeight += 2;
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+            chooseUPREV.stop();
+            chooseUP.play();
         }
         else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
             this.powerupChoiceHeight -= 2;
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWNREV.stop();
+            chooseDOWN.play();
         }
         else {
             this.powerupChoiceHeight *= 0.8;
+            
+            if (chooseUP.getPercent() > 0) {
+                chooseUPREV.play();
+                chooseUPREV.setPercent(120 - chooseUP.getPercent());
+            }
+
+            if (chooseDOWN.getPercent() > 0) {
+                chooseDOWNREV.play();
+                chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
+            }
+
+            chooseUP.stop();
+            chooseDOWN.stop();
         }
         
         if (this.powerupChoiceHeight > this.timeToGetPowerup) {
-            this.selectPowerup(this.powerupChoices[0].powerup);
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+           this.selectPowerup(this.powerupChoices[0].powerup);
         }
 
         if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
-            this.selectPowerup(this.powerupChoices[1].powerup);
+            chooseUP.stop();
+            chooseUPREV.stop();
+            chooseDOWN.stop();
+            chooseDOWNREV.stop();
+          this.selectPowerup(this.powerupChoices[1].powerup);
         }
     }
 

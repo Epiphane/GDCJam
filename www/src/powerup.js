@@ -24,8 +24,13 @@ var Powerup = function(game, player) {
 };
 Powerup.prototype.name = "Nothing";
 Powerup.prototype.description = "You shouldn't be seeing this, you dingus!";
+Powerup.prototype.sound = null;
 
-Powerup.prototype.start = function() {};
+Powerup.prototype.start = function() {
+    if (this.__proto__.sound) {
+        this.__proto__.sound.play();
+    }
+};
 Powerup.prototype.action = function() {
     this.uses --;
 };
@@ -39,7 +44,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return IceBall;
+        return Shield;
     };
 })();
 
@@ -72,12 +77,21 @@ FireBall.prototype.constructor = FireBall;
 FireBall.prototype.name = "FIREBALL";
 FireBall.prototype.description = "Description";
 FireBall.prototype.icon = makeIcon("fire14");
+FireBall.prototype.sound = fireChosen;
 
 FireBall.prototype.action = function() {
     this.game.ball.speedMult = 1.5;
     this.game.ball.normalizeVelocity();
 
     this.uses--;
+
+    var rand = Math.floor(Math.random() * 2);
+    if (rand == 0) {
+        fire1.play();
+    }
+    if (rand == 1) {
+        fire2.play();
+    }
 };
 
 var IceBall = function() { 
@@ -89,8 +103,34 @@ IceBall.prototype.constructor = IceBall;
 IceBall.prototype.name = "ICEBALL";
 IceBall.prototype.description = "Description";
 IceBall.prototype.icon = makeIcon("expand42");
+FireBall.prototype.sound = fireChosen;
 
 IceBall.prototype.approach = function(dx, dy) {
     this.game.ball.speedMult = 0.5;
     this.game.ball.normalizeVelocity();
+};
+
+var Shield = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 2; 
+};
+
+Shield.prototype.constructor = Shield;
+Shield.prototype.name = "SHIELD";
+Shield.prototype.description = "Description";
+Shield.prototype.icon = makeIcon("expand42");
+
+Shield.prototype.action = function() {
+    if (this.uses === 2) {
+        if (this.player.player === 1) {
+            this.game.p1shield = true;
+        }
+        else {
+            this.game.p2shield = true;
+        }
+    }
+
+    console.log(this.game.p1shield);
+
+    this.uses--;
 };
