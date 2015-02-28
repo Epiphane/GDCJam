@@ -19,7 +19,7 @@ function Ball(x, y, radius, speed) {
     this.bounceDuration = 10;
 
     this.trail = [];
-    this.nextTrail = this.trailTimer = 3;
+    this.nextTrail = this.trailTimer = 1;
 }
 
 Ball.prototype.getX = function() { return this.shape.pos.x; };
@@ -73,7 +73,7 @@ Ball.prototype.update = function(game) {
             this.shape.pos.y += collision.overlapV.y * 2;
             if (collision.overlapV.y)
                 this.velocity.y *= -1;
-            
+
             this.bounce();
         }
 
