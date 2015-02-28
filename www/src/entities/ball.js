@@ -113,6 +113,7 @@ Ball.prototype.update = function(game) {
             game.player2.bounceTime = 40;
             this.bounce();
         }
+        
         if (game.player2.bounceTime) {
             game.player2.jiggle();
         }

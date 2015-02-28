@@ -30,7 +30,7 @@ InGame.prototype.update = function() {
 
     if (this.countdown) {
         var thisTime = new Date();
-        var dt = thisTime - this.lastTime
+        var dt = thisTime - this.lastTime;
         this.lastTime = thisTime;
 
         this.countdown -= dt;
