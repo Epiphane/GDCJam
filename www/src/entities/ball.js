@@ -44,6 +44,38 @@ Ball.prototype.normalizeVelocity = function() {
     this.velocity.y *= this.speed / currentSpeed;
 };
 
+function playRandomBounce() {
+    var rand = Math.floor(Math.random() * 4);
+    if (rand == 0) {
+        bounce1.play();
+    }
+    if (rand == 1) {
+        bounce2.play();
+    }
+    if (rand == 2) {
+        bounce3.play();
+    }
+    if (rand == 3) {
+        bounce4.play();
+    }
+}
+
+function playRandomWall() {
+    var rand = Math.floor(Math.random() * 4);
+    if (rand == 0) {
+        wall1.play();
+    }
+    if (rand == 1) {
+        wall2.play();
+    }
+    if (rand == 2) {
+        wall3.play();
+    }
+    if (rand == 3) {
+        wall4.play();
+    }
+}
+
 Ball.prototype.update = function(game) {
     // Movement and collision
     var flipY = function(off) {
@@ -66,15 +98,18 @@ Ball.prototype.update = function(game) {
     if (!this.win) {
         if (this.getY() - this.getSize() <= 0) {
             flipY(this.getY() - this.getSize());
+            playRandomWall();
         }
         else if (this.getY() + this.getSize() >= canvas.height) {
             flipY(this.getY() + this.getSize() - canvas.height);
+            playRandomWall();
         }
 
         // Check for paddle collisions
         var collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
+            playRandomBounce();
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);
@@ -93,6 +128,7 @@ Ball.prototype.update = function(game) {
 
         // Player 2
         if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
+            playRandomBounce();
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);

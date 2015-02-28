@@ -19,6 +19,7 @@ InGame.prototype.init = function() {
 
     this.pause = true;
     this.countdown = 4000;
+    this.numSoundsToPlay = 3;
     this.lastTime = new Date();
 };
 
@@ -92,9 +93,15 @@ InGame.prototype.draw = function(context) {
 
     if (this.countdown > 200) {
         if (this.countdown < 4000) {
+            var seconds = Math.floor(this.countdown / 1000);
+            if (this.numSoundsToPlay >= seconds) {
+                this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
+                this.numSoundsToPlay = this.numSoundsToPlay - 1;
+            }
+
             var text;
             if (this.countdown > 1000)
-                text = Math.floor(this.countdown / 1000).toString();
+                text = seconds.toString();
             else
                 text = 'GO!';
 
@@ -109,6 +116,7 @@ InGame.prototype.draw = function(context) {
                                    (canvas.height / 2) + fontSize / 2);
         }
     }
+
 
     context.restore();
 };
