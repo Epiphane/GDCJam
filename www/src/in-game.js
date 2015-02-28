@@ -31,15 +31,19 @@ InGame.prototype.update = function() {
         return;
     }
 
-    if (keyDown[KEYS.UP])
+    if (keyDown[KEYS.UP] && this.player2.getY() >= 0) {
         this.player2.moveY(-this.speed);
-    if (keyDown[KEYS.DOWN])
+    }
+    if (keyDown[KEYS.DOWN] && this.player2.getY() + this.player2.getHeight() <= canvas.height) {
         this.player2.moveY(this.speed);
+    }
 
-    if (keyDown[KEYS.W])
+    if (keyDown[KEYS.W] && this.player1.getY() >= 0) {
         this.player1.moveY(-this.speed);
-    if (keyDown[KEYS.S])
+    }
+    if (keyDown[KEYS.S] && this.player1.getY() + this.player1.getHeight() <= canvas.height) {
         this.player1.moveY(this.speed);
+    }
 
     this.ball.update(this);
 
