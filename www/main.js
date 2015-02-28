@@ -5,7 +5,6 @@ canvas.height = window.innerHeight - 4;
 var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
 
-
 // State
 var keyDown = {};
 

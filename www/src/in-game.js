@@ -3,30 +3,33 @@
  *  bounceTime lets us animate bounciness on mouse down.
  */
 function Paddle(x, y, width, height) {
-    this.x2 = function() { return this.shape.pos.x + this.width };
-    this.y2 = function() { return this.shape.pos.y + this.height };
     this.height = height;
     this.width = width;
-    this.bounceTime = 0;
 
     this.shape = new SAT.Box(new SAT.Vector(x, y), width, height).toPolygon();
 }
 
-Paddle.prototype.draw = function(context) {
-    this.shape.pos.x = this.shape.pos.x;
-    this.shape.pos.y = this.shape.pos.y;
+Paddle.prototype.getX = function() { return this.shape.pos.x; };
+Paddle.prototype.getY = function() { return this.shape.pos.y; };
+Paddle.prototype.getWidth = function() { return this.width; };
+Paddle.prototype.getHeight = function() { return this.height; };
+Paddle.prototype.moveX = function(dx) { this.shape.pos.x += dx; };
+Paddle.prototype.moveY = function(dy) { this.shape.pos.y += dy; };
+Paddle.prototype.setX = function(x) { this.shape.pos.x = x; };
+Paddle.prototype.setY = function(y) { this.shape.pos.y = y; };
+Paddle.prototype.setWidth = function(width) { this.width = width; };
+Paddle.prototype.setHeight = function(height) { this.height = height; };
 
+Paddle.prototype.draw = function(context) {
     context.fillStyle = this.color || "rgb(200, 200, 200)";
-    context.fillRect(this.shape.pos.x, this.shape.pos.y, this.width, this.height);
-}
+    context.fillRect(this.getX(), this.getY(), this.width, this.height);
+};
  
 /**
  * Circle class defines those funky circles that emanate out from
  *  where an intersection happens.
  */
 function Ball(x, y, radius, speed) {
-    this.radius = radius;
-
     var direction = Math.random() > 0.5;
     var widthOfAngle = Math.PI / 2;
     var angle = Math.random() * widthOfAngle - widthOfAngle / 2;
@@ -39,22 +42,34 @@ function Ball(x, y, radius, speed) {
     }
 }
 
-Ball.prototype.update = function(game) {
-    this.shape.pos.x += this.velocity.x;
-    this.shape.pos.y += this.velocity.y;
+Ball.prototype.getX = function() { return this.shape.pos.x; };
+Ball.prototype.getY = function() { return this.shape.pos.y; };
+Ball.prototype.getSize = function() { return this.shape.r; };
+Ball.prototype.moveX = function(dx) { this.shape.pos.x += dx; };
+Ball.prototype.moveY = function(dy) { this.shape.pos.y += dy; };
+Ball.prototype.setX = function(x) { this.shape.pos.x = x; };
+Ball.prototype.setY = function(y) { this.shape.pos.y = y; };
+Ball.prototype.setSize = function(r) { this.shape.r = r; };
 
-    if (this.shape.pos.y - this.radius <= 0) {
-        this.shape.pos.y = 2 * this.radius - this.shape.pos.y;
+Ball.prototype.update = function(game) {
+    var flipY = function(off) {
+        this.moveY(-2 * off);
         this.velocity.y *= -1;
+    }.bind(this);
+
+    this.moveX(this.velocity.x);
+    this.moveY(this.velocity.y);
+
+    if (this.getY() - this.getSize() <= 0) {
+        flipY(this.getY() - this.getSize());
     }
-    else if (this.shape.pos.y + this.radius >= canvas.height) {
-        var offset = this.shape.pos.y + this.radius - canvas.height;
-        this.shape.pos.y = this.shape.pos.y - 2 * offset;
-        this.velocity.y *= -1;
+    else if (this.getY() + this.getSize() >= canvas.height) {
+        flipY(this.getY() + this.getSize() - canvas.height);
     }
 
     // Check for paddle collisions
     var collision = new SAT.Response();
+    // Player 1
     if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
         this.shape.pos.x += collision.overlapV.x * 2;
         if (collision.overlapV.x)
@@ -64,21 +79,24 @@ Ball.prototype.update = function(game) {
         if (collision.overlapV.y)
             this.velocity.y *= -1;
     }
-    if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
-        this.shape.pos.x += collision.overlapV.x * 2;
-        if (collision.overlapV.x)
-            this.velocity.x *= -1;
 
-        this.shape.pos.y += collision.overlapV.y * 2;
-        if (collision.overlapV.y)
+    // Player 2
+    if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
+        if (collision.overlapV.x) {
+            this.shape.pos.x += collision.overlapV.x * 2;
+            this.velocity.x *= -1;
+        }
+        else {
             this.velocity.y *= -1;
+            this.shape.pos.y += collision.overlapV.y * 2;
+        }
     }
 };
 
 Ball.prototype.draw = function(context) {
     context.beginPath();
-    context.arc(this.shape.pos.x, this.shape.pos.y, 
-                this.radius, 0, 2*Math.PI, false);
+    context.arc(this.getX(), this.getY(), this.getSize(),
+                0, 2 * Math.PI, false);
     context.fillStyle = "rgba(255, 255, 255, 1)";
     context.fill();
 }
@@ -125,14 +143,14 @@ InGame.prototype.init = function() {
  */
 InGame.prototype.update = function() {
     if (keyDown[KEYS.UP])
-        this.player2.shape.pos.y -= this.speed;
+        this.player2.moveY(-this.speed);
     if (keyDown[KEYS.DOWN])
-        this.player2.shape.pos.y += this.speed;
+        this.player2.moveY(this.speed);
 
     if (keyDown[KEYS.W])
-        this.player1.shape.pos.y -= this.speed;
+        this.player1.moveY(-this.speed);
     if (keyDown[KEYS.S])
-        this.player1.shape.pos.y += this.speed;
+        this.player1.moveY(this.speed);
 
     this.ball.update(this);
 };
