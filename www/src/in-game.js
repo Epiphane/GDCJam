@@ -13,7 +13,7 @@ InGame.prototype.init = function() {
 
     // "Entities"
     this.player1 = new Paddle(distFromEdge, canvas.height / 2, initialSize.w, initialSize.h);
-    this.player2 = new Paddle(canvas.width - distFromEdge - initialSize.w, canvas.height / 2, initialSize.w, initialSize.h);
+    this.player2 = new Paddle(canvas.width - distFromEdge, canvas.height / 2, initialSize.w, initialSize.h);
     this.ball = new Ball(canvas.width / 2 - ballSize / 2,
                          canvas.height / 2 - ballSize / 2,
                          ballSize, 10);

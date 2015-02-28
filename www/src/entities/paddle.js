@@ -6,7 +6,7 @@ function Paddle(x, y, width, height) {
     this.height = height;
     this.width = width;
 
-    this.shape = new SAT.Box(new SAT.Vector(x, y), width, height).toPolygon();
+    this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
 }
 
 Paddle.prototype.getX = function() { return this.shape.pos.x; };
