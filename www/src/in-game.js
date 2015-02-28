@@ -10,7 +10,7 @@ function InGame() {
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [90, 90];
+    this.experience = [0, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -34,6 +34,19 @@ InGame.prototype.init = function() {
     this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
                          gameSize.height / 2 - ballSize / 2,
                          ballSize, this.speed);
+
+    this.ball.juice = {
+        color: true,
+        trail: true,
+        bounce: true,
+        speedup: true,
+        sound: true
+    };
+
+    this.player1.juice = this.player2.juice = {
+        color: true,
+        bounce: true
+    };
 
     this.player1.setPowerups(this.powerups[0]);
     this.player2.setPowerups(this.powerups[1]);
@@ -59,13 +72,13 @@ InGame.prototype.init = function() {
     this.cardAlpha = 2;
 
     this.juice = {
-        ballColor: false,
-        ballTrail: false,
-        playerColor: false,
-        ballSpeedup: false,
-        backgroundColor: false,
-        expBarColor: false
-    }
+        background: false,
+        expBarColor: true,
+        countdown: true
+    };
+
+    this.juice.background = new Image();
+    this.juice.background.src = "http://placekitten.com/g/1024/768";
 };
 
 InGame.prototype.giveExperience = function(player) {
@@ -243,6 +256,10 @@ InGame.prototype.drawExperiences = function() {
     grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
     grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
 
+    if (!this.juice.expBarColor) {
+        grds[0] = "rgba(255, 255, 0, 1)";
+        grds[1] = "rgba(255, 255, 0, 1)";
+    }
 
     var padding = 20;
     var expBarWidth = gameSize.width / 2 - (2 * padding + 50);
@@ -345,6 +362,13 @@ InGame.prototype.drawPowerupArrows = function() {
 }
 
 InGame.prototype.draw = function(context) {
+    if (this.juice.background && !this.gameDone) {
+        context.drawImage(this.juice.background, 0, 0, gameSize.width, gameSize.height);
+
+        context.fillStyle = "rgba(0, 0, 0, 0.7)";
+        context.fillRect(0, 0, gameSize.width, gameSize.height);
+    }
+
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
 
     context.fillStyle = "white";
@@ -379,6 +403,9 @@ InGame.prototype.draw = function(context) {
                 var timeToNext = (this.countdown % 1000) / 1000;
                 var maxSize = 600;
                 var fontSize = maxSize - maxSize * timeToNext;
+
+                if (!this.juice.countdown)
+                    fontSize = 200;
 
                 context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
                 context.font = fontSize + "pt Arial Black";

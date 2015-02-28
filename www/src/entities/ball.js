@@ -22,6 +22,14 @@ function Ball(x, y, radius, speed) {
 
     this.trail = [];
     this.nextTrail = this.trailTimer = 1;
+
+    this.juice = {
+        color: false,
+        trail: false,
+        bounce: false,
+        speedup: false,
+        sound: false
+    };
 }
 
 Ball.prototype.getX = function() { return this.shape.pos.x; };
@@ -34,9 +42,14 @@ Ball.prototype.setY = function(y) { this.shape.pos.y = y; };
 Ball.prototype.setSize = function(r) { this.shape.r = r; };
 
 Ball.prototype.bounce = function() {
-    this.bounceTime = this.bounceDuration;
+    if (this.juice.bounce) {
+        this.bounceTime = this.bounceDuration;        
+    }
 
-    this.baseSpeed += 0.5;
+    if (this.juice.speedup) {
+        this.baseSpeed += 0.5;        
+    }
+
     this.speedMult = 1;
 };
 
@@ -48,35 +61,39 @@ Ball.prototype.normalizeVelocity = function() {
     this.velocity.y *= this.speedMult * this.baseSpeed / currentSpeed;
 };
 
-function playRandomBounce(onFire) {
-    var rand = Math.floor(Math.random() * 4);
-    if (rand == 0) {
-        bounce1.play();
-    }
-    if (rand == 1) {
-        bounce2.play();
-    }
-    if (rand == 2) {
-        bounce3.play();
-    }
-    if (rand == 3) {
-        bounce4.play();
+Ball.prototype.playRandomBounce = function() {
+    if (this.speedMult === 1 && this.juice.sound) {
+        var rand = Math.floor(Math.random() * 4);
+        if (rand == 0) {
+            bounce1.play();
+        }
+        if (rand == 1) {
+            bounce2.play();
+        }
+        if (rand == 2) {
+            bounce3.play();
+        }
+        if (rand == 3) {
+            bounce4.play();
+        }
     }
 }
 
-function playRandomWall() {
-    var rand = Math.floor(Math.random() * 4);
-    if (rand == 0) {
-        wall1.play();
-    }
-    if (rand == 1) {
-        wall2.play();
-    }
-    if (rand == 2) {
-        wall3.play();
-    }
-    if (rand == 3) {
-        wall4.play();
+Ball.prototype.playRandomWall = function() {
+    if (this.juice.sound) {
+        var rand = Math.floor(Math.random() * 4);
+        if (rand == 0) {
+            wall1.play();
+        }
+        if (rand == 1) {
+            wall2.play();
+        }
+        if (rand == 2) {
+            wall3.play();
+        }
+        if (rand == 3) {
+            wall4.play();
+        }
     }
 }
 
@@ -109,28 +126,27 @@ Ball.prototype.update = function(game) {
     if (!this.win) {
         if (this.getY() - this.getSize() <= 0) {
             flipY(this.getY() - this.getSize());
-            playRandomWall();
+            this.playRandomWall();
         }
         else if (this.getY() + this.getSize() >= gameSize.height) {
             flipY(this.getY() + this.getSize() - gameSize.height);
-            playRandomWall();
+            this.playRandomWall();
         }
         else if (this.getX() + this.getSize() >= gameSize.width && game.p2shield) {
             flipX(this.getX() + this.getSize() - gameSize.width);
             game.p2shield = false;
-            playRandomWall();
+            this.playRandomWall();
         }
         else if (this.getX() - this.getSize() <= 0 && game.p1shield) {
             flipX(this.getX() - this.getSize());
             game.p1shield = false;
-            playRandomWall();
+            this.playRandomWall();
         }
 
         // Check for paddle collisions
         var collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
-            playRandomBounce(this.speedMult);
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);
@@ -148,11 +164,12 @@ Ball.prototype.update = function(game) {
 
             game.player1.hitBall();
             game.giveExperience(0);
+
+            this.playRandomBounce();
         }
 
         // Player 2
         if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
-            playRandomBounce(this.speedMult);
             if (collision.overlapV.x) {
                 this.velocity.x *= -1;
                 this.moveX(collision.overlapV.x);
@@ -170,6 +187,8 @@ Ball.prototype.update = function(game) {
 
             game.player2.hitBall();
             game.giveExperience(1);
+            
+            this.playRandomBounce();
         }
 
         game.player1.ballDist(this.getX(), this.getY(), this.velocity.x < 0);
@@ -178,23 +197,31 @@ Ball.prototype.update = function(game) {
         var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
         //console.log(speed);
 
-        if (this.speedMult > 1) {
-            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                            Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1 / 5));
-        }
-        else if (this.speedMult < 1) {
-            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                            Math.atan(this.velocity.y / this.velocity.x), 60, 200/360, 250/360));
-        }
-        else {
-            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                            Math.atan(this.velocity.y / this.velocity.x), 60));
-        }
+        this.otherFrame = !this.otherFrame;
+        if (this.juice.trail) {
+            var newTrail, minHue = 0, maxHue = 1;
+            if (this.speedMult > 1) {
+                maxHue = 1 / 5;
+            }
+            else if (this.speedMult < 1) {
+                minHue = 200 / 360;
+                maxHue = 250 / 360;
+            }
 
+            newTrail = new BallTrail(this.getX(), this.getY(), 25,
+                       Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1);
+            
+            newTrail.juice.color = this.juice.color;
+            if (this.otherFrame || this.juice.color) {
+                this.trail.push(newTrail);
+            }
+        }
+    
         for(var t = 0; t < this.trail.length; t ++) {
             this.trail[t].update();
-            if (!this.trail[t].isAlive())
+            if (!this.trail[t].isAlive()) {
                 this.trail.splice(t--, 1);
+            }
         }
     }
 };
@@ -223,8 +250,15 @@ Ball.prototype.draw = function(context) {
 
     context.beginPath();
     context.arc(0, 0, this.getSize(), 0, 2 * Math.PI, false);
-    var rgb = HSVtoRGB(hue, 1, 1);
-    context.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 1)";
+
+    if (this.juice.color) {
+        var rgb = HSVtoRGB(hue, 0.6, 1);
+        context.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 1)";
+    }
+    else {
+        context.fillStyle = "rgba(255, 255, 255, 1)";
+    }
+
     context.fill();
 
     // restore to original state
