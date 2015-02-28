@@ -74,7 +74,11 @@ Ball.prototype.update = function(game) {
             if (collision.overlapV.y)
                 this.velocity.y *= -1;
 
+            game.player1.bounceTime = 40;
             this.bounce();
+        }
+        if (game.player1.bounceTime) {
+            game.player1.jiggle();
         }
 
         // Player 2
@@ -88,7 +92,11 @@ Ball.prototype.update = function(game) {
                 this.shape.pos.y += collision.overlapV.y * 2;
             }
 
+            game.player2.bounceTime = 40;
             this.bounce();
+        }
+        if (game.player2.bounceTime) {
+            game.player2.jiggle();
         }
     }
 

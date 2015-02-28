@@ -24,6 +24,9 @@ InGame.prototype.init = function() {
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function() {
+    var p1Moved = false;
+    var p2Moved = false;
+
     if (this.pause) {
         if (keyDown[KEYS.SPACE]) {
             this.pause = false;
@@ -31,17 +34,17 @@ InGame.prototype.update = function() {
         return;
     }
 
-    if (keyDown[KEYS.UP] && this.player2.getY() >= 0) {
+    if (keyDown[KEYS.UP]) {
         this.player2.accelerate(-this.speed);
     }
-    if (keyDown[KEYS.DOWN] && this.player2.getY() + this.player2.getHeight() <= canvas.height) {
+    if (keyDown[KEYS.DOWN]) {
         this.player2.accelerate(this.speed);
     }
 
-    if (keyDown[KEYS.W] && this.player1.getY() >= 0) {
+    if (keyDown[KEYS.W]) {
         this.player1.accelerate(-this.speed);
     }
-    if (keyDown[KEYS.S] && this.player1.getY() + this.player1.getHeight() <= canvas.height) {
+    if (keyDown[KEYS.S]) {
         this.player1.accelerate(this.speed);
     }
 
