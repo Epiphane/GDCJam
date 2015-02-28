@@ -1,13 +1,13 @@
 function InGame() {
     // Initial variables
-    this.speed = 15;
+    this.speed = 10;
     this.p1Score = 0;
     this.p2Score = 0;
 
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [0, 0];
+    this.experience = [90, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];

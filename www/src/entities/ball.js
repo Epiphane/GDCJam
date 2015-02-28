@@ -154,28 +154,33 @@ Ball.prototype.update = function(game) {
             game.player2.hitBall();
             game.giveExperience(1);
         }
-    }
 
-    var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
-    //console.log(speed);
+        if (this.velocity.x < 0)
+            game.player1.approach(this.getX(), this.getY());
+        if (this.velocity.x > 0)
+            game.player2.approach(this.getX(), this.getY());
 
-    if (this.speedMult > 1) {
-        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                        Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1 / 5));
-    }
-    else if (this.speedMult < 1) {
-        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                        Math.atan(this.velocity.y / this.velocity.x), 60, 200/360, 250/360));
-    }
-    else {
-        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                        Math.atan(this.velocity.y / this.velocity.x), 60));
-    }
+        var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
+        //console.log(speed);
 
-    for(var t = 0; t < this.trail.length; t ++) {
-        this.trail[t].update();
-        if (!this.trail[t].isAlive())
-            this.trail.splice(t--, 1);
+        if (this.speedMult > 1) {
+            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                            Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1 / 5));
+        }
+        else if (this.speedMult < 1) {
+            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                            Math.atan(this.velocity.y / this.velocity.x), 60, 200/360, 250/360));
+        }
+        else {
+            this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                            Math.atan(this.velocity.y / this.velocity.x), 60));
+        }
+
+        for(var t = 0; t < this.trail.length; t ++) {
+            this.trail[t].update();
+            if (!this.trail[t].isAlive())
+                this.trail.splice(t--, 1);
+        }
     }
 };
 
