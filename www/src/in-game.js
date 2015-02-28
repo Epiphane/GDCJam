@@ -10,7 +10,7 @@ function InGame() {
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [0, 0];
+    this.experience = [0, 90];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];

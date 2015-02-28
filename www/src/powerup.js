@@ -7,7 +7,7 @@ function makeIcon(name) {
 
 /* Powerup Service */
 var Powerup = function(game, player) {
-    this.uses = 6;
+    this.uses = 10;
     this.game = game;
     this.player = player;
 
@@ -44,7 +44,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return IceBall;
+        return GhostBall;
     };
 })();
 
@@ -154,4 +154,17 @@ Shield.prototype.action = function() {
     }
 
     this.uses--;
+};
+
+var GhostBall = function() { 
+    Powerup.apply(this, arguments);
+};
+
+GhostBall.prototype.constructor = GhostBall;
+GhostBall.prototype.name = "Ghost";
+GhostBall.prototype.description = "Description";
+GhostBall.prototype.icon = makeIcon("ghost2");
+
+GhostBall.prototype.moveAway = function(dx, dy) {
+    this.game.ball.opacity = dx;
 };
