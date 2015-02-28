@@ -2,7 +2,7 @@
  * Rectangle class.  Origin at (x, y), with specified width and height.
  *  bounceTime lets us animate bounciness on mouse down.
  */
-function Rect(x, y, width, height) {
+function Paddle(x, y, width, height) {
     this.x = x;
     this.y = y;
     this.x2 = function() { return this.x + this.width };
@@ -11,12 +11,17 @@ function Rect(x, y, width, height) {
     this.width = width;
     this.bounceTime = 0;
 }
+
+Paddle.prototype.draw = function(context) {
+    context.fillStyle = this.color || "rgb(200, 200, 200)";
+    context.fillRect(this.x, this.y, this.width, this.height);
+}
  
 /**
  * Circle class defines those funky circles that emanate out from
  *  where an intersection happens.
  */
-function Circle(x, y, radius, alpha) {
+function Ball(x, y, radius, alpha) {
     this.x = x;
     this.y = y;
     this.radius = 40;
@@ -40,7 +45,7 @@ function rectIntersection(rectA, rectB) {
     var intersectHeight = intersectBottom - intersectTop;
  
     if (intersectWidth > 0 && intersectHeight > 0) {
-        return new Rect(intersectLeft, intersectTop, intersectWidth, intersectHeight);
+        return new Paddle(intersectLeft, intersectTop, intersectWidth, intersectHeight);
     }
     return null;
 }
@@ -56,21 +61,7 @@ function rectContainsPoint(rect, point) {
     }
     return false;
 }
- 
-// Which rectangle is the user dragging (if any?)
-var draggingRect = null;
-var draggingTarget = null;
-var wasIntersecting = false;
- 
-var circles = [];
- 
-/** Draw the specified rect on screen with specified color. */
-function drawRect(rect, color) {
-    // console.log(rect)
-    context.fillStyle = color;
-    context.fillRect(rect.x, rect.y, rect.width, rect.height);
-}
- 
+
 /** 
  * Rectangles bounce when you click on em.  Iterate that animation here.
  */
@@ -80,7 +71,7 @@ function iterateBounciness(rect) {
        rect.bounceTime--;
    }
  
-   var bouncedRect = new Rect(0, 0, 0, 0);
+   var bouncedRect = new Paddle(0, 0, 0, 0);
    bouncedRect.x = rect.x - bounceFactor;
    bouncedRect.y = rect.y - bounceFactor;
    bouncedRect.width  = rect.width  + bounceFactor * 2;
@@ -88,57 +79,47 @@ function iterateBounciness(rect) {
    return bouncedRect;
 }
  
-/**
- * Animate the circles that emanate out from intersections
- */
-function iterateCircles() {
-    for (var ndx = circles.length - 1; ndx >= 0; ndx--) {
-        circles[ndx].radius += 2;
-        circles[ndx].alpha -= 0.03;
- 
-        context.beginPath();
-        context.arc(circles[ndx].x, circles[ndx].y, 
-                    circles[ndx].radius, 0, 2*Math.PI, false);
-        context.fillStyle = "rgba(255, 255, 255, " + circles[ndx].alpha + ")";
-        context.fill();
- 
-        if (circles[ndx].alpha < 0) {
-            circles.splice(ndx, 1);
-        }
-    }
+function InGame() {
+    // Initial variables
+    var distFromEdge = 20;
+    var initialSize = { w: 20, h: 140 };
+    var ballSize = 30;
+    this.speed = 8;
+
+    // "Entities"
+    this.player1 = new Paddle(distFromEdge, canvas.height / 2, initialSize.w, initialSize.h);
+    this.player2 = new Paddle(canvas.width - distFromEdge - initialSize.w, canvas.height / 2, initialSize.w, initialSize.h);
+    this.ball = new Ball(canvas.width / 2 - ballSize / 2,
+                         canvas.height / 2 - ballSize / 2,
+                         ballSize, ballSize);
 }
- 
-var InGame = function() {
-    var game = {};
- 
-    var rect1 = new Rect(10, 10, 50, 50);
-    var rect2 = new Rect(60, 100, 160, 220);
 
-    game.init = function() {
-        document.addEventListener('keydown', function(evt) {
-            console.log(evt);
-        });
-        console.log('hi');
-    };
+InGame.prototype.init = function() {
+};
 
-    /**
-     * Main animation loop!  Check for intersection, update rectangle
-     *  objects, and draw to screen.
-     */
-    game.update = function() {
-    };
+/**
+ * Main animation loop!  Check for intersection, update rectangle
+ *  objects, and draw to screen.
+ */
+InGame.prototype.update = function() {
+    if (keyDown[KEYS.UP])
+        this.player2.y -= this.speed;
+    if (keyDown[KEYS.DOWN])
+        this.player2.y += this.speed;
 
-    game.draw = function() {
-        var bouncedRect1 = iterateBounciness(rect1);    
-        var bouncedRect2 = iterateBounciness(rect2);
+    if (keyDown[KEYS.W])
+        this.player1.y -= this.speed;
+    if (keyDown[KEYS.S])
+        this.player1.y += this.speed;
+};
 
-        context.clearRect(0 , 0 , canvas.width, canvas.height);
-     
-        drawRect(bouncedRect1, "rgb(255, 170, 170)");
-        drawRect(bouncedRect2, "rgb(212, 106, 106)");
-     
-        iterateCircles();
-    };
+InGame.prototype.draw = function(context) {
+    this.player1.draw(context);
+    this.player2.draw(context);
 
-    return game;
+    context.beginPath();
+    context.arc(this.ball.x, this.ball.y, 
+                this.ball.radius, 0, 2*Math.PI, false);
+    context.fillStyle = "rgba(255, 255, 255, " + this.ball.alpha + ")";
+    context.fill();
 };
