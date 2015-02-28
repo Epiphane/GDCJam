@@ -49,9 +49,12 @@ function update() {
 
     currentState.update();
 
-    context.clearRect(0 , 0 , canvas.width, canvas.height);
+    if (!currentState.gameDone) {
+        context.clearRect(0 , 0 , canvas.width, canvas.height);
+    }
     context.save();
     context.scale(canvas.width / 1024, canvas.height / 768);
+
     currentState.draw(context);
     context.restore();
 }
