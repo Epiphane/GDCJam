@@ -28,7 +28,7 @@ function HSVtoRGB(h, s, v) {
  *  where an intersection happens.
  */
 var hue = 0;
-function BallTrail(x, y, size, direction, life) {
+function BallTrail(x, y, size, direction, life, minHue, maxHue) {
     this.shape = new SAT.Box(new SAT.Vector(x, y), size, size);
 
     this.size = size;
@@ -41,9 +41,20 @@ function BallTrail(x, y, size, direction, life) {
     //     g: Math.floor(Math.random() * 255),
     //     b: Math.floor(Math.random() * 255),
     // };
-    this.rgb = HSVtoRGB(hue, 1, 1);
-    hue += 0.04;
-    while(hue >= 1) hue --;
+    if (!minHue && !maxHue) {
+        this.rgb = HSVtoRGB(hue, 1, 1);
+        hue += 0.04;
+        while (hue >= 1) {
+            hue--;
+        }
+    }
+    else {
+        hue += 0.04;
+        if (hue < minHue || hue > maxHue) {
+            hue = minHue;
+        }
+        this.rgb = HSVtoRGB(hue, 1, 1);
+    }
 }
 
 BallTrail.prototype.isAlive = function() { return this.life > 0; };

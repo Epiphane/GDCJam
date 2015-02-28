@@ -1,13 +1,13 @@
 function InGame() {
     // Initial variables
-    this.speed = 10;
+    this.speed = 15;
     this.p1Score = 0;
     this.p2Score = 0;
 
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [90, 90];
+    this.experience = [0, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -17,7 +17,7 @@ function InGame() {
 
     this.cardFrame = 0;
     this.cardAlpha = 2;
-    this.scoreToWin = 10;
+    this.scoreToWin = 5;
 }
 
 InGame.prototype.init = function() {
@@ -30,7 +30,7 @@ InGame.prototype.init = function() {
     this.player2 = new Paddle(gameSize.width - distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
     this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
                          gameSize.height / 2 - ballSize / 2,
-                         ballSize, 10);
+                         ballSize, this.speed);
 
     this.player1.setPowerups(this.powerups[0]);
     this.player2.setPowerups(this.powerups[1]);

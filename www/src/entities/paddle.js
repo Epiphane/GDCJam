@@ -40,9 +40,15 @@ Paddle.prototype.setWidth = function(width) { this.width = width; };
 Paddle.prototype.setHeight = function(height) { this.height = height; };
 
 Paddle.prototype.addPowerup = function(powerup) {
-    this.powerups.push(powerup);
-
     powerup.start();
+    powerup.action();
+    if (powerup.uses <= 0) {
+    	powerup.done();
+    }
+    else {
+    	this.powerups.push(powerup);
+    }
+    // console.log(powerup.uses);
 };
 
 Paddle.prototype.accelerate = function(dy) {

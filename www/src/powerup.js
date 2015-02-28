@@ -29,7 +29,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return WideBar;
+        return FireBall;
     };
 })();
 
@@ -51,4 +51,42 @@ WideBar.prototype.start = function() {
 WideBar.prototype.done = function() {
     this.player.setHeight(this.originalHeight);
     this.player.updateShape();
+};
+
+var FireBall = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 3; 
+};
+
+FireBall.prototype.constructor = FireBall;
+FireBall.prototype.name = "FIREBALL";
+FireBall.prototype.description = "Description";
+FireBall.prototype.icon = makeIcon("fire14");
+
+FireBall.prototype.action = function() {
+    this.game.ball.speedMult = 1.5;
+    this.game.ball.normalizeVelocity();
+
+    this.uses--;
+};
+
+var IceBall = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 3; 
+};
+
+IceBall.prototype.constructor = IceBall;
+IceBall.prototype.name = "ICEBALL";
+IceBall.prototype.description = "Description";
+IceBall.prototype.icon = makeIcon("expand42");
+
+IceBall.prototype.action = function() {
+    this.game.ball.speedMult = 0.5;
+    this.game.ball.normalizeVelocity();
+
+    this.uses--;
+
+    if (!this.uses) {
+        this.game.ball.speed = this.game.speed;
+    }
 };
