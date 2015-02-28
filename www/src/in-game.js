@@ -244,23 +244,38 @@ InGame.prototype.drawExperiences = function() {
     grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
 
 
-    var padding = 20;
-    var expBarWidth = gameSize.width / 2 - (2 * padding + 50);
+    var padding = 50;
+    var expBarHeight = 23;
+    var expBarWidth = gameSize.width / 2 - (2 * padding + 75);
 
     for(var i = 0; i < 2; i ++) {
         // Fill with gradient
-        if (this.expWidth[i] < this.experience[i])
-            this.expWidth[i] ++;
-        if (this.expWidth[i] > this.experience[i])
-            this.expWidth[i] -= 2;
+        var diff = this.experience[i] - this.expWidth[i];
+        this.expWidth[i] += diff / 7;
 
         var p2Width = expBarWidth * this.expWidth[i] / 100;
         context.fillStyle = grds[i];
         if (i === 0)
-            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, padding * 2);
+            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, expBarHeight);
         else
-            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, padding * 2);
+            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, expBarHeight);
     }
+
+    // Draw the gray box around em
+    var boxMargin = 5;
+    var boxY = padding - boxMargin;
+    var boxWidth = expBarWidth + boxMargin * 2;
+    var boxHeight = expBarHeight + boxMargin * 2;
+    context.strokeStyle = "rgb(100, 100, 100)";
+    context.lineWidth = 3;
+    context.strokeRect(padding - boxMargin,
+            boxY,
+            boxWidth,
+            boxHeight);
+    context.strokeRect(gameSize.width - padding - boxMargin - expBarWidth,
+            boxY,
+            boxWidth,
+            boxHeight);
 };
 
 var ARROW_SHAFT_WIDTH = 20;
