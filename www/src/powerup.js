@@ -44,7 +44,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return Shield;
+        return IceBall;
     };
 })();
 
@@ -103,22 +103,34 @@ IceBall.prototype.constructor = IceBall;
 IceBall.prototype.name = "ICEBALL";
 IceBall.prototype.description = "Description";
 IceBall.prototype.icon = makeIcon("expand42");
-FireBall.prototype.sound = iceChosen;
+IceBall.prototype.sound = iceChosen;
 
+var playedIceSound = false;  // Global flags are fun 
 IceBall.prototype.approach = function(dx, dy) {
     this.game.ball.speedMult = 0.5;
     this.game.ball.normalizeVelocity();
 
-    var rand = Math.floor(Math.random() * 3);
-    if (rand == 0) {
-        ice1.play();
+    if (!playedIceSound) {
+        var rand = Math.floor(Math.random() * 3);
+        if (rand == 0) {
+            ice1.play();
+        }
+        if (rand == 1) {
+            ice2.play();
+        }
+        if (rand == 2) {
+            ice3.play();
+        }
+
+        playedIceSound = true;
     }
-    if (rand == 1) {
-        ice2.play();
-    }
-    if (rand == 2) {
-        ice3.play();
-    }
+};
+
+IceBall.prototype.action = function() {
+    this.uses--;
+    this.game.ball.speedMult = 1;
+    this.game.ball.normalizeVelocity();
+    playedIceSound = false;
 };
 
 var Shield = function() { 
