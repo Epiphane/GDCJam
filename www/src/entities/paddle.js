@@ -98,20 +98,23 @@ Paddle.prototype.draw = function(context) {
     context.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
     context.restore();
     
-    // var powerupX;
-    // var ICON_WIDTH = 48;
-    // if (this.getX() < gameSize.width / 2)
-    //     powerupX = 20;
-    // else
-    //     powerupX = gameSize.width - (20 + ICON_WIDTH);
-    // for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
-    //     if (this.powerups[ndx].__proto__.icon) {
-    //         context.drawImage(this.powerups[ndx].__proto__.icon, 
-    //                           powerupX, gameSize.height - (20 + ICON_WIDTH));
+    var powerupX;
+    var ICON_WIDTH = 48;
+    if (this.getX() < gameSize.width / 2)
+        powerupX = 20;
+    else
+        powerupX = gameSize.width - (20 + ICON_WIDTH);
+    for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
+        if (this.powerups[ndx].__proto__.icon) {
+            context.drawImage(this.powerups[ndx].__proto__.icon, 
+                              powerupX, gameSize.height - (20 + ICON_WIDTH));
 
-    //         powerupX += (20 + ICON_WIDTH) * Math.sign(gameSize.width / 2 - this.y);
-    //     }
-    // }
+            if (gameSize.width / 2 - this.y > 0)
+                powerupX += (20 + ICON_WIDTH);
+            else
+                powerupX -= (20 + ICON_WIDTH);
+        }
+    }
 };
 
 Paddle.prototype.jiggle = function() {
