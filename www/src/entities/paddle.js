@@ -78,6 +78,11 @@ Paddle.prototype.update = function() {
 		this.dy = 0;
 	}
 
+    if (this.getY() <= 0)
+        this.setY(0);
+    if (this.getY() + this.getHeight() > gameSize.height)
+        this.setY(gameSize.height - this.getHeight());
+
     if (this.bounceTime)
         this.jiggle();
 };

@@ -17,6 +17,7 @@ function InGame() {
 
     this.cardFrame = 0;
     this.cardAlpha = 2;
+    this.scoreToWin = 10;
 }
 
 InGame.prototype.init = function() {
@@ -119,13 +120,13 @@ InGame.prototype.update = function() {
 
     if (this.p1Score > this.p2Score) {
         this.highscore = this.p1Score;
-        if (this.highscore >= 1) {
+        if (this.highscore >= this.scoreToWin) {
             this.gameDone = 1;
         }
     }
     else {
         this.highscore = this.p2Score;
-        if (this.highscore >= 1) {
+        if (this.highscore >= this.scoreToWin) {
             this.gameDone = 2;
         }
     }
