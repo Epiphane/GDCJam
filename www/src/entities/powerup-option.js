@@ -3,18 +3,18 @@
  *  bounceTime lets us animate bounciness on mouse down.
  */
 function PowerupOption(x, y, powerup) {
-    var padding = 40;
+    var padding = 20;
 
-    this.height = gameSize.height / 2 - 2 * padding - 60;
-    this.width = gameSize.width / 2 - 2 * padding;
+    this.height = 200;
+    this.width = gameSize.width / 2 - 80;
+
+    x = (gameSize.width + 80) * x / 2 + padding;
 
     if (y === 0)
-        this.shape = new SAT.Box(new SAT.Vector(gameSize.width * x / 2 + padding, 
-                                                gameSize.height - padding - this.height), 
+        this.shape = new SAT.Box(new SAT.Vector(x, padding + 60), 
                                  this.width, this.height).toPolygon();
     else if (y === 1)
-        this.shape = new SAT.Box(new SAT.Vector(gameSize.width * x / 2 + padding, 
-                                                padding), 
+        this.shape = new SAT.Box(new SAT.Vector(x, gameSize.height - padding - this.height), 
                                  this.width, this.height).toPolygon();
 
     this.powerup = powerup;
@@ -28,11 +28,17 @@ PowerupOption.prototype.setWidth = function(width) { this.width = width; };
 PowerupOption.prototype.setHeight = function(height) { this.height = height; };
 
 PowerupOption.prototype.draw = function(context) {
-    // context.save();
-
-    // context.translate(this.getX() + this.width / 2, this.getY() + this.height / 2);
-    // context.scale(this.bounceFactor, this.bounceFactor);
-
     context.fillStyle = this.color || "rgb(255, 100, 100)";
     context.fillRect(this.getX(), this.getY(), this.width, this.height);
+
+    context.fillStyle = "rgba(255, 255, 255, 1)";
+    context.font = "42pt Poiret One";
+    var text = this.powerup.prototype.name;
+    var textSize = context.measureText(text);
+    context.fillText(text, this.getX() + 15, this.getY() + 60);
+
+    context.font = "12pt Poiret One";
+    var text = this.powerup.prototype.description;
+    var textSize = context.measureText(text);
+    context.fillText(text, this.getX() + 15, this.getY() + 100);
 };
