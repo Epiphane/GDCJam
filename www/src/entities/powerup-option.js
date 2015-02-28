@@ -35,5 +35,4 @@ PowerupOption.prototype.draw = function(context) {
 
     context.fillStyle = this.color || "rgb(255, 100, 100)";
     context.fillRect(this.getX(), this.getY(), this.width, this.height);
-    // context.restore();
 };

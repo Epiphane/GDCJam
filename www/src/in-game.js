@@ -228,8 +228,6 @@ InGame.prototype.draw = function(context) {
         }
     }
 
-    context.restore();
-
     // Draw powerupChoices!
     for (var i = 0; i < this.powerupChoices.length; i ++) {
         this.powerupChoices[i].draw(context);
