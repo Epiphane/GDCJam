@@ -59,7 +59,8 @@ InGame.prototype.draw = function(context) {
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
     var scoreWidth = context.measureText(scores).width;
 
-    context.font = "50px Courier"
+    context.fillStyle = "white";
+    context.font = "50px Courier";
     context.fillText(scores, (canvas.width / 2) - (scoreWidth / 2), 50);
     this.player1.draw(context);
     this.player2.draw(context);
