@@ -7,7 +7,7 @@ function InGame() {
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
-    this.experience = [90, 90];
+    this.experience = [90, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
 
@@ -117,13 +117,14 @@ InGame.prototype.update = function() {
     }
     else {
         this.highscore = this.p2Score;
-        console.log(this.highscore);
+        //console.log(this.highscore);
         if (this.highscore >= 1) {
             this.gameDone = 2;
         }
     }
 
     if (this.gameDone && this.winner) {
+        //this.init();
         this.winSequence();
         this.winner = false;
     }
@@ -282,7 +283,7 @@ InGame.prototype.winSequence = function() {
             x += sx;
             y += sy;
 
-            if ( x < ( - cwidth / 2 ) || x > ( canvas.width + cwidth / 2 ) ) {
+            if ( x < ( - cwidth / 2 ) || x > ( gameSize.width + cwidth / 2 ) ) {
 
                 var index = particles.indexOf( this );
                 particles.splice( index, 1 );
@@ -291,9 +292,9 @@ InGame.prototype.winSequence = function() {
 
             }
 
-            if ( y > canvas.height - cheight / 2 ) {
+            if ( y > gameSize.height - cheight / 2 ) {
 
-                y = canvas.height - cheight / 2;
+                y = gameSize.height - cheight / 2;
                 sy = - sy * 0.85;
 
             }
@@ -355,7 +356,7 @@ InGame.prototype.winSequence = function() {
     }
     else {
         throwCard(this.player2.getX(), this.player2.getY(), -1);
-        console.log(this.player2.getX());
+        //console.log(this.player2.getX());
     }
 
     setInterval( function () {

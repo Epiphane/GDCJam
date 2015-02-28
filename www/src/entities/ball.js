@@ -152,9 +152,21 @@ Ball.prototype.update = function(game) {
         }
     }
 
-    // Create trail!
-    this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
-                    Math.atan(this.velocity.y / this.velocity.x), 60));
+    var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
+    //console.log(speed);
+
+    if (speed > game.speed + 1) {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1 / 5));
+    }
+    else if (speed < game.speed - 1) {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60, 200/360, 250/360));
+    }
+    else {
+        this.trail.push(new BallTrail(this.getX(), this.getY(), 25,
+                        Math.atan(this.velocity.y / this.velocity.x), 60));
+    }
 
     for(var t = 0; t < this.trail.length; t ++) {
         this.trail[t].update();
