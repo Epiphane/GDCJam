@@ -33,6 +33,7 @@ function InGame() {
     this.p2Ready = false;
     this.readyToStart = false;
     this.readyDelay = 0;
+    this.chosePowerupDelay = 0;
 
     this.scoreToWin = 7;
 
@@ -142,18 +143,14 @@ InGame.prototype.giveExperience = function(player) {
 
 InGame.prototype.selectPowerup = function(PowerupCstr) {
     // Reset powerup stuff
-    this.experience[this.powerupChoice.player] = 0;
-    this.powerupChoices = [];
-    this.powerupChoiceHeight = 0;
-
-
+    
 
     if (this.powerupChoice.player === 0)
         this.player1.addPowerup(new PowerupCstr(this, this.player1));
     else
         this.player2.addPowerup(new PowerupCstr(this, this.player2));
 
-    this.pause = false;
+    this.chosePowerupDelay = 50;
 };
 
 /**
@@ -180,6 +177,16 @@ InGame.prototype.update = function() {
         if (this.readyDelay == 0) {
             this.readyToStart = true;
             this.countdown = 4000;
+        }
+    }
+
+    if (this.chosePowerupDelay != 0) {
+        this.chosePowerupDelay--;
+        if (this.chosePowerupDelay == 0) {
+            this.experience[this.powerupChoice.player] = 0;
+            this.powerupChoices = [];
+            this.powerupChoiceHeight = 0;
+            this.pause = false;
         }
     }
 
@@ -301,20 +308,24 @@ InGame.prototype.update = function() {
                 chooseDOWN.stop();
             }
 
-            if (this.powerupChoiceHeight > this.timeToGetPowerup) {
+            if (this.powerupChoiceHeight > this.timeToGetPowerup && this.chosePowerupDelay == 0) {
                 chooseUP.stop();
                 chooseUPREV.stop();
                 chooseDOWN.stop();
                 chooseDOWNREV.stop();
                 this.selectPowerup(this.powerupChoices[0].powerup);
+                var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
+                this.createFadeArrow(arrowX, 80, 1);
             }
 
-            if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
+            if (this.powerupChoiceHeight < -this.timeToGetPowerup && this.chosePowerupDelay == 0) {
                 chooseUP.stop();
                 chooseUPREV.stop();
                 chooseDOWN.stop();
                 chooseDOWNREV.stop();
                 this.selectPowerup(this.powerupChoices[1].powerup);
+                var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
+                this.createFadeArrow(arrowX, 80, -1);
             }
         }
 
@@ -362,6 +373,7 @@ InGame.prototype.update = function() {
 
             if (keyDown[KEYS.W]) {
                 this.player1.accelerate(-this.speed);
+
             }
             if (keyDown[KEYS.S]) {
                 this.player1.accelerate(this.speed);
@@ -499,8 +511,8 @@ function drawArrow(arrowX, fillPercent, xScale, yScale, fillStyle, strokeStyle) 
     context.restore();
 }
 
-InGame.prototype.createFadeArrow = function(x, y, scale) {
-    this.fadeArrows.push( {x: x, y: y, scale: scale, alpha: 0.8 } );
+InGame.prototype.createFadeArrow = function(x, y, flipped) {
+    this.fadeArrows.push( {x: x, y: y, scale: 1, alpha: 0.8, flipped: flipped } );
 }
 
 var ARROW_MARGIN = 200;
@@ -646,7 +658,7 @@ InGame.prototype.draw = function(context) {
 
             // Draw powerupChoices!
             for (var i = 0; i < this.powerupChoices.length; i ++) {
-                this.powerupChoices[i].draw(context);
+                this.powerupChoices[i].draw(context, this.powerupChoice.player);
             }
         }
         else {
@@ -681,7 +693,7 @@ InGame.prototype.draw = function(context) {
     for (var ndx = 0; ndx < this.fadeArrows.length; ndx++) {
         var currArrow = this.fadeArrows[ndx];
         jankyArrowScale = currArrow.scale;
-        drawArrow(currArrow.x, 2, 1, 1, "rgba(255, 255, 255, " + currArrow.alpha + ")", "rgba(0, 0, 0, 0)");
+        drawArrow(currArrow.x, 2, 1, currArrow.flipped, "rgba(255, 255, 255, " + currArrow.alpha + ")", "rgba(0, 0, 0, 0)");
         jankyArrowScale = 1;
     }
 };

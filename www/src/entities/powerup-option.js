@@ -23,10 +23,18 @@ PowerupOption.prototype.setY = function(y) { this.y = y; };
 PowerupOption.prototype.setWidth = function(width) { this.width = width; };
 PowerupOption.prototype.setHeight = function(height) { this.height = height; };
 
-PowerupOption.prototype.draw = function(context) {
+PowerupOption.prototype.draw = function(context, player) {
     context.fillStyle = "rgba(255, 255, 255, 1)";
     context.font = "42pt Poiret One";
     var text = this.powerup.prototype.name;
-    var textSize = context.measureText(text);
-    context.fillText(text, this.getX() + 65, this.getY() + 60);
+    var textSize = context.measureText(text).width;
+
+    var textX = 0;
+    if (player == 0) {
+        textX = ARROW_MARGIN - textSize/2;
+    }
+    else {
+        textX = gameSize.width - ARROW_MARGIN - textSize/2;
+    }
+    context.fillText(text, textX, this.getY() + 60);
 };

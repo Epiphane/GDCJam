@@ -72,9 +72,11 @@ Paddle.prototype.setY = function(y) { this.shape.pos.y = y; };
 Paddle.prototype.setWidth = function(width) { this.width = width; };
 Paddle.prototype.setHeight = function(height) { this.height = height; };
 
-Paddle.prototype.addPowerup = function(powerup) {
+Paddle.prototype.addPowerup = function(powerup, x, y) {
     powerup.start();
     powerup.action();
+    powerup.x = x;
+    powerup.y = y;
     if (powerup.uses <= 0) {
     	powerup.done();
     }
