@@ -28,20 +28,24 @@ function HSVtoRGB(h, s, v) {
  *  where an intersection happens.
  */
 var hue = 0;
-function BallTrail(x, y, size, direction, life, minHue, maxHue) {
+function BallTrail(x, y, size, dy, dx, life, minHue, maxHue, drift, freeze) {
     this.shape = new SAT.Box(new SAT.Vector(x, y), size, size);
 
     this.size = size;
     this.life = life;
     this.maxLife = life;
-    this.direction = direction;
+    this.direction = Math.atan(dy / dx);
     this.juice = { color: false };
 
-    // this.rgb = {
-    //     r: Math.floor(Math.random() * 255),
-    //     g: Math.floor(Math.random() * 255),
-    //     b: Math.floor(Math.random() * 255),
-    // };
+    this.freeze = freeze;
+
+    this.velocity = { x: 0, y: 0 };
+    if (drift || freeze) {
+        var angle = Math.random() > 0.5 ? Math.PI / 2 : -Math.PI / 2;
+        this.velocity.x = Math.cos(this.direction + angle);
+        this.velocity.y = Math.cos(this.direction + angle);
+    }
+
     if (!minHue && !maxHue) {
         this.rgb = HSVtoRGB(hue, 0.6, 1);
         hue += 0.04;
@@ -64,7 +68,11 @@ BallTrail.prototype.getY = function() { return this.shape.pos.y; };
 
 BallTrail.prototype.update = function() {
     this.life --;
-    this.size *= (this.maxLife - 3) / this.maxLife;
+    if (!this.freeze)
+        this.size *= (this.maxLife - 3) / this.maxLife;
+
+    this.shape.pos.x += this.velocity.x;
+    this.shape.pos.y += this.velocity.y;
 };
 
 BallTrail.prototype.draw = function(context) {

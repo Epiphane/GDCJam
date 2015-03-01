@@ -58,15 +58,22 @@ InGame.prototype.setJuiceAndAdd = function() {
     };
 
     this.juice = {
-        background: false,
+        background: juice,
         expBarColor: false,
         countdown: false
     };
 
     switch (this.juiceLevel) {
+        case 13:
+        case 12:
+        case 11:
+        case 10:
+        case 9:
+            break;
+        case 8:
+            this.juice.background = this.background;
         case 7:
         case 6:
-            this.juice.background = this.background;
         case 5:
             this.ball.juice.color = true;
         case 4:
@@ -273,7 +280,7 @@ InGame.prototype.update = function() {
 
 
         if (this.powerupChoices.length > 0) {
-            var upKey, downKey;
+            var upKey, downKey, leftKey, rightKey;
             if (this.powerupChoice.player === 0) {
                 upKey = KEYS.W;
                 downKey = KEYS.S;
@@ -572,7 +579,9 @@ var floatOffset = 0;
 InGame.prototype.draw = function(context) {
 
     if (this.juice.background && !this.gameDone) {
-        context.drawImage(this.juice.background, 0, 0, gameSize.width, gameSize.height);
+        var x = gameSize.width / 2 - this.juice.background.width / 2;
+        var y = gameSize.height / 2 - this.juice.background.height / 2;
+        context.drawImage(this.juice.background, x, y, this.juice.background.width, this.juice.background.height);
 
         context.fillStyle = "rgba(0, 0, 0, 0.7)";
         context.fillRect(0, 0, gameSize.width, gameSize.height);
@@ -617,19 +626,43 @@ InGame.prototype.draw = function(context) {
         context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 450);
     }
     else {
-
-        if (this.portals) {
-            context.fillStyle = "white";
-            context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
-            context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
-        }
-
         if (!this.gameDone) {
+            if (this.portals) {
+                context.fillStyle = "blue";
+                context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
+                context.fillStyle = "orange";
+                context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
+            }
+
             this.drawPowerupArrows();
             this.drawExperiences();
 
             this.player1.draw(context);
             this.player2.draw(context);
+
+            var grd = context.createLinearGradient(0.000, 150.000, 10.000, 150.000);
+      
+            // Add colors
+            grd.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
+            grd.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
+
+            // Fill with gradient
+            context.fillStyle = grd;
+            if (this.player1.hasPowerup(Shield)) {
+                context.fillRect(0, 0, 10, gameSize.height);
+            }
+
+            grd = context.createLinearGradient(gameSize.width - 10, 150.000, gameSize.width, 150.000);
+      
+            // Add colors
+            grd.addColorStop(0.000, 'rgba(0, 0, 0, 0.000)');
+            grd.addColorStop(1.000, 'rgba(86, 170, 255, 1.000)');
+
+            // Fill with gradient
+            context.fillStyle = grd;
+            if (this.player2.hasPowerup(Shield)) {
+                context.fillRect(gameSize.width - 10, 0, 10, gameSize.height);
+            }
 
             this.ball.draw(context);
 
