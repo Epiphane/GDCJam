@@ -135,14 +135,14 @@ Ball.prototype.update = function(game) {
             flipY(this.getY() + this.getSize() - gameSize.height);
             this.playRandomWall();
         }
-        else if (this.getX() + this.getSize() >= gameSize.width && game.p2shield) {
+        else if (this.getX() + this.getSize() >= gameSize.width && game.player2.hasPowerup(Shield)) {
             flipX(this.getX() + this.getSize() - gameSize.width);
-            game.p2shield = false;
+            game.player2.removePowerup(Shield);
             this.playRandomWall();
         }
-        else if (this.getX() - this.getSize() <= 0 && game.p1shield) {
+        else if (this.getX() - this.getSize() <= 0 && game.player1.hasPowerup(Shield)) {
             flipX(this.getX() - this.getSize());
-            game.p1shield = false;
+            game.player1.removePowerup(Shield);
             this.playRandomWall();
         }
 
@@ -212,7 +212,7 @@ Ball.prototype.update = function(game) {
             }
 
             newTrail = new BallTrail(this.getX(), this.getY(), 25,
-                       Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1);
+                       Math.atan(this.velocity.y / this.velocity.x), 60, minHue, maxHue);
             
             newTrail.juice.color = this.juice.color;
             if (this.otherFrame || this.juice.color) {
@@ -261,7 +261,12 @@ Ball.prototype.draw = function(context) {
         context.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 1)";
     }
     else {
-        context.fillStyle = "rgba(255, 255, 255, 1)";
+        if (this.speedMult > 1)
+            context.fillStyle = "rgba(255, 0, 0, 1)";
+        else if (this.speedMult > 1)
+            context.fillStyle = "rgba(0, 0, 255, 1)";
+        else
+            context.fillStyle = "rgba(255, 255, 255, 1)";
     }
 
     context.fill();

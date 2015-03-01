@@ -136,19 +136,7 @@ Shield.prototype.constructor = Shield;
 Shield.prototype.name = "SHIELD";
 Shield.prototype.description = "Description";
 Shield.prototype.icon = makeIcon("shield");
-
-Shield.prototype.action = function() {
-    if (this.uses === 2) {
-        if (this.player.player === 1) {
-            this.game.p1shield = true;
-        }
-        else {
-            this.game.p2shield = true;
-        }
-    }
-
-    this.uses--;
-};
+Shield.prototype.action = function() {};
 
 var GhostBall = function() { 
     Powerup.apply(this, arguments);
@@ -167,21 +155,18 @@ var AddJuice = function() {
     Powerup.apply(this, arguments);
 };
 
-AddJuice.prototype.constructor = AddJuice;
-AddJuice.prototype.name = "Add Juice!";
-AddJuice.prototype.description = "Squeeeeeze";
-AddJuice.prototype.icon = makeIcon("juice");
-
-AddJuice.prototype.moveAway = function(dx, dy) {
-    this.game.ball.opacity = dx;
-};
-
-Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, AddJuice];
+Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall];
 
 (function() {
-    Powerup.getRandomPowerup = function(player) {
+    Powerup.getRandomPowerup = function(game, player) {
+        var p = (player === 1 ? game.player1 : game.player2);
         var ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
-        console.log(Powerup.prototype.available[ndx])
+        while(Powerup.prototype.available[ndx] !== Shield && 
+            p.hasPowerup(Powerup.prototype.available[ndx])) {
+            ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
+        }
+        console.log(p.powerups, Powerup.prototype.available[ndx]);
+
         return Powerup.prototype.available[ndx];
     };
 })();
