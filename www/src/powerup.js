@@ -23,7 +23,6 @@ var Powerup = function(game, player) {
         this.__proto__.done = Powerup.prototype.done;
 };
 Powerup.prototype.name = "Nothing";
-Powerup.prototype.description = "You shouldn't be seeing this, you dingus!";
 Powerup.prototype.sound = null;
 
 Powerup.prototype.start = function() {
@@ -48,7 +47,6 @@ var WideBar = function() { Powerup.apply(this, arguments); };
 
 WideBar.prototype.constructor = WideBar;
 WideBar.prototype.name = "Wide Paddle";
-WideBar.prototype.description = "May your paddle be wide and your future be bright!";
 WideBar.prototype.icon = makeIcon("expand42");
 
 WideBar.prototype.start = function() {
@@ -69,7 +67,6 @@ var FireBall = function() {
 
 FireBall.prototype.constructor = FireBall;
 FireBall.prototype.name = "FIREBALL";
-FireBall.prototype.description = "Description";
 FireBall.prototype.icon = makeIcon("fire14");
 FireBall.prototype.sound = fireChosen;
 
@@ -95,7 +92,6 @@ var IceBall = function() {
 
 IceBall.prototype.constructor = IceBall;
 IceBall.prototype.name = "ICEBALL";
-IceBall.prototype.description = "Description";
 IceBall.prototype.icon = makeIcon("snowflake");
 IceBall.prototype.sound = iceChosen;
 
@@ -134,7 +130,6 @@ var Shield = function() {
 
 Shield.prototype.constructor = Shield;
 Shield.prototype.name = "SHIELD";
-Shield.prototype.description = "Description";
 Shield.prototype.icon = makeIcon("shield");
 Shield.prototype.action = function() {};
 
@@ -145,7 +140,6 @@ var Portals = function() {
 
 Portals.prototype.constructor = Portals;
 Portals.prototype.name = "PORTALS";
-Portals.prototype.description = "Description";
 Portals.prototype.icon = makeIcon("expand42");
 
 Portals.prototype.action = function() {
@@ -176,19 +170,83 @@ var GhostBall = function() {
 };
 
 GhostBall.prototype.constructor = GhostBall;
-GhostBall.prototype.name = "Ghost";
-GhostBall.prototype.description = "Description";
+GhostBall.prototype.name = "GHOST";
 GhostBall.prototype.icon = makeIcon("ghost2");
 
 GhostBall.prototype.moveAway = function(dx, dy) {
     this.game.ball.opacity = dx;
 };
 
-var AddJuice = function() { 
+var ReverseControls = function() { 
     Powerup.apply(this, arguments);
+    this.uses = 4;
 };
 
-Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall];
+ReverseControls.prototype.constructor = ReverseControls;
+ReverseControls.prototype.name = "FLIP ENEMY";
+ReverseControls.prototype.icon = makeIcon("reverse");
+
+ReverseControls.prototype.start = function() {
+    if (this.player.player === 1) {
+        KEYS.UP = 40;
+        KEYS.DOWN = 38;
+        this.game.player2.angle = Math.PI;
+    }
+    else {
+        KEYS.W = 83;
+        KEYS.S = 87;
+        this.game.player1.angle = Math.PI;
+    }
+}
+ReverseControls.prototype.done = function() {
+    if (this.player.player === 1) {
+        KEYS.DOWN = 40;
+        KEYS.UP = 38;
+        this.game.player2.angle = Math.PI;
+    }
+    else {
+        KEYS.S = 83;
+        KEYS.W = 87;
+        this.game.player1.angle = Math.PI;
+    }
+}
+
+// var ReverseControls = function() { 
+//     Powerup.apply(this, arguments);
+//     this.uses = 4;
+// };
+
+// ReverseControls.prototype.constructor = ReverseControls;
+// ReverseControls.prototype.name = "Move Horizontally";
+// ReverseControls.prototype.description = "Free as a bird!";
+// ReverseControls.prototype.icon = makeIcon("reverse");
+
+// ReverseControls.prototype.start = function() {
+//     if (this.player.player === 1) {
+//         KEYS.UP = 40;
+//         KEYS.DOWN = 38;
+//         this.game.player2.angle = Math.PI;
+//     }
+//     else {
+//         KEYS.W = 83;
+//         KEYS.S = 87;
+//         this.game.player1.angle = Math.PI;
+//     }
+// }
+// ReverseControls.prototype.done = function() {
+//     if (this.player.player === 1) {
+//         KEYS.DOWN = 40;
+//         KEYS.UP = 38;
+//         this.game.player2.angle = Math.PI;
+//     }
+//     else {
+//         KEYS.S = 83;
+//         KEYS.W = 87;
+//         this.game.player1.angle = Math.PI;
+//     }
+// }
+
+Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, Portals, ReverseControls];
 
 (function() {
     Powerup.getRandomPowerup = function(game, player) {

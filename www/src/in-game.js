@@ -503,7 +503,7 @@ InGame.prototype.createFadeArrow = function(x, y, scale) {
     this.fadeArrows.push( {x: x, y: y, scale: scale, alpha: 0.8 } );
 }
 
-var ARROW_MARGIN = 150;
+var ARROW_MARGIN = 200;
 InGame.prototype.drawPowerupArrows = function() {
     var arrowX = 0;
     if (this.powerupChoices.length > 0) {

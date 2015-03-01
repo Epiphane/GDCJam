@@ -23,6 +23,8 @@ function Paddle(x, y, width, height) {
     };
 
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
+
+    this.angle = 0;
 }
 
 Paddle.prototype.updateShape = function() {
@@ -144,6 +146,10 @@ Paddle.prototype.draw = function(context) {
 	context.save();
 
 	context.translate(this.getX() + this.width / 2, this.getY() + this.height / 2);
+    if (this.angle > 0) {
+        context.rotate(this.angle);
+        this.angle -= Math.PI / 16;
+    }
 	context.scale(this.bounceFactor, this.bounceFactor);
 
     context.fillStyle = "rgb(200, 200, 200)";
