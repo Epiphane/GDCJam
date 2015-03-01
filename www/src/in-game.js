@@ -28,6 +28,7 @@ function InGame() {
     this.p1Ready = false;
     this.p2Ready = false;
     this.readyToStart = false;
+    this.readyDelay = 0;
 }
 
 InGame.prototype.init = function() {
@@ -39,8 +40,8 @@ InGame.prototype.init = function() {
     this.player1 = new Paddle(distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
     this.player2 = new Paddle(gameSize.width - distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
     this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
-                         gameSize.height / 2 - ballSize / 2,
-                         ballSize, this.speed);
+            gameSize.height / 2 - ballSize / 2,
+            ballSize, this.speed);
 
     this.ball.juice = {
         color: true,
@@ -109,7 +110,7 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
     this.powerupChoices = [];
     this.powerupChoiceHeight = 0;
 
-    
+
 
     if (this.powerupChoice.player === 0)
         this.player1.addPowerup(new PowerupCstr(this, this.player1));
@@ -125,8 +126,25 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
  */
 InGame.prototype.update = function() {
     // Fade the effect arrows if necessary
-    for (var ndx = 0; ndx < this.fadeArrows.length; ndx++) {
-        
+    for (var ndx = this.fadeArrows.length - 1; ndx >= 0; ndx--) {
+        if (this.fadeArrows[ndx].scale < 0) {
+            this.fadeArrows[ndx].scale -= 0.05;
+        }
+        else {
+            this.fadeArrows[ndx].scale += 0.05;
+        }
+        this.fadeArrows[ndx].alpha -= 0.03;
+        if (this.fadeArrows[ndx].alpha < 0) {
+            this.fadeArrows.splice(ndx, 1);
+        }
+    }
+
+    if (this.readyDelay != 0) {
+        this.readyDelay--;
+        if (this.readyDelay == 0) {
+            this.readyToStart = true;
+            this.countdown = 4000;
+        }
     }
 
     // ask players to get ready
@@ -159,8 +177,8 @@ InGame.prototype.update = function() {
                 this.p1Ready = true;
                 readySound.play();
                 chooseUP.stop();
+                this.createFadeArrow(ARROW_MARGIN, 80, 1);
                 if (this.p2Ready) {
-                    this.readyToStart = true;
                     this.readyDelay = 50;
                 }
             }
@@ -194,139 +212,140 @@ InGame.prototype.update = function() {
                 this.p2Ready = true;
                 readySound2.play();
                 chooseUP2.stop();
+                this.createFadeArrow(gameSize.width - ARROW_MARGIN, 80, 1);
                 if (this.p1Ready) {
-                    this.readyToStart = true;
                     this.readyDelay = 50;
                 }
             }
         }
 
-        return;
-    }
-
-
-    if (this.powerupChoices.length > 0) {
-        var upKey, downKey;
-        if (this.powerupChoice.player === 0) {
-            upKey = KEYS.W;
-            downKey = KEYS.S;
-        }
-        else {
-            upKey = KEYS.UP;
-            downKey = KEYS.DOWN;
-        }
-
-        if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
-            this.powerupChoiceHeight += 2;
-            chooseDOWN.stop();
-            chooseDOWNREV.stop();
-            chooseUPREV.stop();
-            chooseUP.play();
-        }
-        else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
-            this.powerupChoiceHeight -= 2;
-            chooseUP.stop();
-            chooseUPREV.stop();
-            chooseDOWNREV.stop();
-            chooseDOWN.play();
-        }
-        else {
-            this.powerupChoiceHeight *= 0.8;
-            
-            if (chooseUP.getPercent() > 0) {
-                chooseUPREV.play();
-                chooseUPREV.setPercent(120 - chooseUP.getPercent());
-            }
-
-            if (chooseDOWN.getPercent() > 0) {
-                chooseDOWNREV.play();
-                chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
-            }
-
-            chooseUP.stop();
-            chooseDOWN.stop();
-        }
-        
-        if (this.powerupChoiceHeight > this.timeToGetPowerup) {
-            chooseUP.stop();
-            chooseUPREV.stop();
-            chooseDOWN.stop();
-            chooseDOWNREV.stop();
-           this.selectPowerup(this.powerupChoices[0].powerup);
-        }
-
-        if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
-            chooseUP.stop();
-            chooseUPREV.stop();
-            chooseDOWN.stop();
-            chooseDOWNREV.stop();
-          this.selectPowerup(this.powerupChoices[1].powerup);
-        }
-    }
-
-    if (this.p1Score > this.p2Score) {
-        this.highscore = this.p1Score;
-        if (this.highscore >= this.scoreToWin) {
-            this.gameDone = 1;
-        }
-    }
-    else {
-        this.highscore = this.p2Score;
-        if (this.highscore >= this.scoreToWin) {
-            this.gameDone = 2;
-        }
-    }
-
-    if (this.gameDone) {
-        this.winSequence();
     }
     else {
 
-        if (this.countdown && !this.gameDone) {
-            var thisTime = new Date();
-            var dt = thisTime - this.lastTime;
-            this.lastTime = thisTime;
 
-            this.countdown -= dt;
-
-            if (this.countdown <= 0) {
-                this.countdown = 0;
-                this.pause = false;
-            }
-        }
-
-        if (this.pause) {
-            return;
-        }
-
-        if (keyDown[KEYS.UP]) {
-            this.player2.accelerate(-this.speed);
-        }
-        if (keyDown[KEYS.DOWN]) {
-            this.player2.accelerate(this.speed);
-        }
-
-        if (keyDown[KEYS.W]) {
-            this.player1.accelerate(-this.speed);
-        }
-        if (keyDown[KEYS.S]) {
-            this.player1.accelerate(this.speed);
-        }
-
-        this.player1.update();
-        this.player2.update();
-        this.ball.update(this);
-
-        if (this.ball.win) {
-            if (this.ball.win === 1) {
-                this.p1Score++;
+        if (this.powerupChoices.length > 0) {
+            var upKey, downKey;
+            if (this.powerupChoice.player === 0) {
+                upKey = KEYS.W;
+                downKey = KEYS.S;
             }
             else {
-                this.p2Score++;
+                upKey = KEYS.UP;
+                downKey = KEYS.DOWN;
             }
 
-            this.pause = true;
-            this.init();
+            if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
+                this.powerupChoiceHeight += 2;
+                chooseDOWN.stop();
+                chooseDOWNREV.stop();
+                chooseUPREV.stop();
+                chooseUP.play();
+            }
+            else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
+                this.powerupChoiceHeight -= 2;
+                chooseUP.stop();
+                chooseUPREV.stop();
+                chooseDOWNREV.stop();
+                chooseDOWN.play();
+            }
+            else {
+                this.powerupChoiceHeight *= 0.8;
+
+                if (chooseUP.getPercent() > 0) {
+                    chooseUPREV.play();
+                    chooseUPREV.setPercent(120 - chooseUP.getPercent());
+                }
+
+                if (chooseDOWN.getPercent() > 0) {
+                    chooseDOWNREV.play();
+                    chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
+                }
+
+                chooseUP.stop();
+                chooseDOWN.stop();
+            }
+
+            if (this.powerupChoiceHeight > this.timeToGetPowerup) {
+                chooseUP.stop();
+                chooseUPREV.stop();
+                chooseDOWN.stop();
+                chooseDOWNREV.stop();
+                this.selectPowerup(this.powerupChoices[0].powerup);
+            }
+
+            if (this.powerupChoiceHeight < -this.timeToGetPowerup) {
+                chooseUP.stop();
+                chooseUPREV.stop();
+                chooseDOWN.stop();
+                chooseDOWNREV.stop();
+                this.selectPowerup(this.powerupChoices[1].powerup);
+            }
+        }
+
+        if (this.p1Score > this.p2Score) {
+            this.highscore = this.p1Score;
+            if (this.highscore >= this.scoreToWin) {
+                this.gameDone = 1;
+            }
+        }
+        else {
+            this.highscore = this.p2Score;
+            if (this.highscore >= this.scoreToWin) {
+                this.gameDone = 2;
+            }
+        }
+
+        if (this.gameDone) {
+            this.winSequence();
+        }
+        else {
+
+            if (this.countdown && !this.gameDone) {
+                var thisTime = new Date();
+                var dt = thisTime - this.lastTime;
+                this.lastTime = thisTime;
+
+                this.countdown -= dt;
+
+                if (this.countdown <= 0) {
+                    this.countdown = 0;
+                    this.pause = false;
+                }
+            }
+
+            if (this.pause) {
+                return;
+            }
+
+            if (keyDown[KEYS.UP]) {
+                this.player2.accelerate(-this.speed);
+            }
+            if (keyDown[KEYS.DOWN]) {
+                this.player2.accelerate(this.speed);
+            }
+
+            if (keyDown[KEYS.W]) {
+                this.player1.accelerate(-this.speed);
+            }
+            if (keyDown[KEYS.S]) {
+                this.player1.accelerate(this.speed);
+            }
+
+            this.player1.update();
+            this.player2.update();
+            this.ball.update(this);
+
+            if (this.ball.win) {
+                if (this.ball.win === 1) {
+                    this.p1Score++;
+                }
+                else {
+                    this.p2Score++;
+                }
+
+                this.pause = true;
+                this.init();
+            }
         }
     }
 };
@@ -390,21 +409,23 @@ var ARROW_TIP_BASE_WIDTH = 40;
 var ARROW_HEAD_LENGTH = 100;
 var ARROW_SHAFT_HEIGHT = 30;
 
-function drawArrow(arrowX, fillPercent, yScale, fillStyle, strokeStyle) {
+var jankyArrowScale = 1;
+function drawArrow(arrowX, fillPercent, xScale, yScale, fillStyle, strokeStyle) {
    // FILL ARROW
     context.save();
     
 	context.translate(arrowX, gameSize.height/2 - yScale * 65);
-    context.scale(1, yScale);
+    context.scale(xScale, yScale);
     
 
     var clipY = -fillPercent * (ARROW_HEAD_LENGTH + ARROW_SHAFT_HEIGHT) + ARROW_SHAFT_HEIGHT
-    context.rect(-ARROW_SHAFT_WIDTH - ARROW_TIP_BASE_WIDTH,
+    context.rect(-1000,
                  clipY, 
-                 1000, 
+                 2000, 
                  1000);
     context.clip();
 
+    context.scale(jankyArrowScale, jankyArrowScale);
     context.beginPath();
     context.moveTo(-ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
     context.lineTo(-ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
@@ -466,12 +487,12 @@ InGame.prototype.drawPowerupArrows = function() {
         arrowGradient.addColorStop(1.000, 'rgba(127, 0, 127, 1.000)');
 
         if (fillHeight < 0) {
-            drawArrow(arrowX, -fillHeight, -1, arrowGradient, "white");
-            drawArrow(arrowX, 0,            1, arrowGradient, "white");
+            drawArrow(arrowX, -fillHeight, 1, -1, arrowGradient, "white");
+            drawArrow(arrowX, 0,           1,  1, arrowGradient, "white");
         }
         else {
-            drawArrow(arrowX, 0,           -1, arrowGradient, "white");
-            drawArrow(arrowX, fillHeight,   1, arrowGradient, "white");
+            drawArrow(arrowX, 0,           1, -1, arrowGradient, "white");
+            drawArrow(arrowX, fillHeight,  1,  1, arrowGradient, "white");
         }
     }
 }
@@ -485,14 +506,17 @@ InGame.prototype.drawReadyArrows = function() {
 
     // P1 arrow
     var p1Fill = this.p1ReadyHeight / this.timeToGetReady;
-    drawArrow(ARROW_MARGIN, p1Fill, 1, readyGradient, "white");
+    drawArrow(ARROW_MARGIN, p1Fill, 1, 1, readyGradient, "white");
 
     // P2 arrow
     var p2Fill = this.p2ReadyHeight / this.timeToGetReady;
-    drawArrow(gameSize.width - ARROW_MARGIN, p2Fill, 1, readyGradient, "white");
+    drawArrow(gameSize.width - ARROW_MARGIN, p2Fill, 1, 1, readyGradient, "white");
 }
 
+var floatOffset = 0;
+
 InGame.prototype.draw = function(context) {
+
     if (this.juice.background && !this.gameDone) {
         context.drawImage(this.juice.background, 0, 0, gameSize.width, gameSize.height);
 
@@ -513,6 +537,30 @@ InGame.prototype.draw = function(context) {
         this.player2.draw(context);
 
         this.ball.draw(context);
+
+        context.font = "30pt Arial";
+        context.fillStyle = this.p1Ready ? "green" : "white";
+        var text = this.p1Ready ? "READY!" : "READY?";
+        
+        var textLength = context.measureText(text).width;
+
+        context.fillText(text, ARROW_MARGIN - textLength/2, 140 + Math.sin(floatOffset) * 15);
+
+        text = this.p2Ready ? "READY!" : "READY?";
+        context.fillStyle = this.p2Ready ? "green" : "white";
+        textLength = context.measureText(text).width;
+
+        context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 140 + Math.sin(floatOffset) * 15);
+
+        floatOffset += 0.1;
+
+        text = "[W]";
+        context.fillStyle = "white";
+        textLength = context.measureText(text).width;
+        context.fillText(text, ARROW_MARGIN - textLength/2, 450);
+        text = "[UP]";
+        textLength = context.measureText(text).width;
+        context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 450);
     }
     else {
 
@@ -586,6 +634,14 @@ InGame.prototype.draw = function(context) {
                 }
             }        
         }
+    }
+    
+    // Draw fade arrows as necessary
+    for (var ndx = 0; ndx < this.fadeArrows.length; ndx++) {
+        var currArrow = this.fadeArrows[ndx];
+        jankyArrowScale = currArrow.scale;
+        drawArrow(currArrow.x, 2, 1, 1, "rgba(255, 255, 255, " + currArrow.alpha + ")", "rgba(0, 0, 0, 0)");
+        jankyArrowScale = 1;
     }
 };
 
