@@ -16,7 +16,7 @@ function InGame() {
     this.timeToGetReady = 100;
 
     this.expPerHit = 25;
-    this.experience = [90, 90];
+    this.experience = [0, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
