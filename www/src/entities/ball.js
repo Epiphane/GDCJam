@@ -135,19 +135,53 @@ Ball.prototype.update = function(game) {
             flipY(this.getY() + this.getSize() - gameSize.height);
             this.playRandomWall();
         }
-        else if (this.getX() + this.getSize() >= gameSize.width && game.p2shield) {
+        else if (this.getX() + this.getSize() >= gameSize.width && game.player2.hasPowerup(Shield)) {
             flipX(this.getX() + this.getSize() - gameSize.width);
-            game.p2shield = false;
+            game.player2.removePowerup(Shield);
             this.playRandomWall();
         }
-        else if (this.getX() - this.getSize() <= 0 && game.p1shield) {
+        else if (this.getX() - this.getSize() <= 0 && game.player1.hasPowerup(Shield)) {
             flipX(this.getX() - this.getSize());
-            game.p1shield = false;
+            game.player1.removePowerup(Shield);
             this.playRandomWall();
         }
 
-        // Check for paddle collisions
         var collision = new SAT.Response();
+
+        if (game.portals) {
+            if (SAT.testPolygonCircle(game.shape1, this.shape, collision) ||
+                SAT.testPolygonCircle(game.shape2, this.shape, collision)) {
+                // Portal 1 (From the Left)
+                if (this.velocity.x > 0 && this.getX() < gameSize.width / 2) {
+                    //console.log("case 1");
+                    this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
+                    this.shape.pos.y = game.portal2.y + 50;
+                }
+                // Portal 2 (From the Right)
+                else if (this.velocity.x < 0 && this.getX() > gameSize.width / 2) {
+                    //console.log("case 2");
+                    this.shape.pos.x = game.portal1.x - this.getSize() - 5;
+                    this.shape.pos.y = game.portal1.y + 50;
+                }
+                // Portal 1 (From the Right)
+                else if (this.velocity.x < 0 && this.getX() < gameSize.width / 2) {
+                    //console.log("case 3:" + this.velocity.x);
+                    this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
+                    this.shape.pos.y = game.portal2.y + 50;        
+                    this.velocity.x *= -1;    
+                }
+                // Portal 2 (From the Left)
+                else if (this.velocity.x > 0 && this.getX() > gameSize.width / 2) {
+                    //console.log("case 4: " + this.velocity.x);
+                    this.shape.pos.x = game.portal1.x - this.getSize() - 5;
+                    this.shape.pos.y = game.portal1.y + 50;        
+                    this.velocity.x *= -1;  
+                }
+            }
+        }
+
+        // Check for paddle collisions
+        collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
             if (collision.overlapV.x) {
@@ -212,7 +246,7 @@ Ball.prototype.update = function(game) {
             }
 
             newTrail = new BallTrail(this.getX(), this.getY(), 25,
-                       Math.atan(this.velocity.y / this.velocity.x), 60, 0, 1);
+                       Math.atan(this.velocity.y / this.velocity.x), 60, minHue, maxHue);
             
             newTrail.juice.color = this.juice.color;
             if (this.otherFrame || this.juice.color) {
@@ -261,7 +295,12 @@ Ball.prototype.draw = function(context) {
         context.fillStyle = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 1)";
     }
     else {
-        context.fillStyle = "rgba(255, 255, 255, 1)";
+        if (this.speedMult > 1)
+            context.fillStyle = "rgba(255, 0, 0, 1)";
+        else if (this.speedMult > 1)
+            context.fillStyle = "rgba(0, 0, 255, 1)";
+        else
+            context.fillStyle = "rgba(255, 255, 255, 1)";
     }
 
     context.fill();

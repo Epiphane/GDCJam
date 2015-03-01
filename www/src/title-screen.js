@@ -33,6 +33,7 @@ function TitleScreen() {
     this.buttonAlreadyBounced = false;  // don't bounce button twice holmes
     this.swoopValue = 0; // SWOOOOP the UI elements off screen when we hit GO
     this.clickedPlay = false;
+    this.hue = 0;
 
     this.button = { 
         shape: new SAT.Box(new SAT.Vector(gameSize.width/2 - 100, gameSize.height/2 + 100 - 40 + 2), 200, 50).toPolygon(), 
@@ -87,7 +88,7 @@ TitleScreen.prototype.update = function() {
 TitleScreen.prototype.draw = function() {
     // Draw the buttons
     if (this.buttonHovered) {
-        context.fillStyle = "rgb(255, 0, 0)";
+        context.fillStyle = "rgb(255, 255, 255)";
     }
     else {
         context.fillStyle = "rgb(50, 50, 50)";
@@ -98,8 +99,15 @@ TitleScreen.prototype.draw = function() {
     context.fillRect(  this.bouncedButton.shape.pos.x + this.swoopValue, this.bouncedButton.shape.pos.y, this.bouncedButton.width, this.bouncedButton.height);
     context.strokeRect(this.bouncedButton.shape.pos.x + this.swoopValue, this.bouncedButton.shape.pos.y, this.bouncedButton.width, this.bouncedButton.height);
 
-    drawCenteredText("JUICY PONG", "40pt", "rgb(255, 170, 170)", gameSize.height/2 - 100, -this.swoopValue);
-    drawCenteredText("PLAY", "30pt", "rgb(255, 170, 170)", gameSize.height/2 + 100, this.swoopValue);
+    this.rgb = HSVtoRGB(this.hue, 0.6, 1);
+    this.hue += 0.04;
+    while (this.hue >= 1) {
+        this.hue--;
+    }
+    var color = "rgb(" + this.rgb.r + ", " + this.rgb.g + ", " + this.rgb.b + ")";
+
+    drawCenteredText("JUICY PONG", "40pt", "rgb(255, 255, 255)", gameSize.height/2 - 100, -this.swoopValue);
+    drawCenteredText("PLAY", "30pt", color, gameSize.height/2 + 100, this.swoopValue);
 
     // If the play button is all the way off the screen, WE OUT FOOLS
     if (this.bouncedButton.shape.pos.x + this.swoopValue > gameSize.width) {
@@ -107,3 +115,27 @@ TitleScreen.prototype.draw = function() {
     }
 };
 
+function HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (h && s === undefined && v === undefined) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.floor(r * 255),
+        g: Math.floor(g * 255),
+        b: Math.floor(b * 255)
+    };
+}

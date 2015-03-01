@@ -136,18 +136,39 @@ Shield.prototype.constructor = Shield;
 Shield.prototype.name = "SHIELD";
 Shield.prototype.description = "Description";
 Shield.prototype.icon = makeIcon("shield");
+Shield.prototype.action = function() {};
 
-Shield.prototype.action = function() {
-    if (this.uses === 2) {
-        if (this.player.player === 1) {
-            this.game.p1shield = true;
-        }
-        else {
-            this.game.p2shield = true;
-        }
+var Portals = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 5; 
+};
+
+Portals.prototype.constructor = Portals;
+Portals.prototype.name = "PORTALS";
+Portals.prototype.description = "Description";
+Portals.prototype.icon = makeIcon("expand42");
+
+Portals.prototype.action = function() {
+    if (this.uses > 0 && !this.game.portals) {
+        this.game.portals = true;
+
+        this.game.portal1.x = gameSize.width / 2 - 10 - Math.random() * gameSize.width / 8;
+        this.game.portal1.y = Math.random() * (gameSize.height - 100);
+        this.game.portal1.width = this.game.ball.getSize() + 10;
+
+        this.game.portal2.x = gameSize.width / 2 + 10 + Math.random() * gameSize.width / 8;
+        this.game.portal2.y = Math.random() * (gameSize.height - 100);
+        this.game.portal2.width = this.game.ball.getSize() + 10;
+
+        this.game.shape1 = new SAT.Box(new SAT.Vector(this.game.portal1.x, this.game.portal1.y), this.game.ball.getSize() + 10, 100).toPolygon();
+        this.game.shape2 = new SAT.Box(new SAT.Vector(this.game.portal2.x, this.game.portal2.y), this.game.ball.getSize() + 10, 100).toPolygon();
     }
 
     this.uses--;
+
+    if (!this.uses) {
+        this.game.portals = false;
+    }
 };
 
 var GhostBall = function() { 
@@ -167,21 +188,18 @@ var AddJuice = function() {
     Powerup.apply(this, arguments);
 };
 
-AddJuice.prototype.constructor = AddJuice;
-AddJuice.prototype.name = "Add Juice!";
-AddJuice.prototype.description = "Squeeeeeze";
-AddJuice.prototype.icon = makeIcon("juice");
-
-AddJuice.prototype.moveAway = function(dx, dy) {
-    this.game.ball.opacity = dx;
-};
-
-Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, AddJuice];
+Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall];
 
 (function() {
-    Powerup.getRandomPowerup = function(player) {
+    Powerup.getRandomPowerup = function(game, player) {
+        var p = (player === 1 ? game.player1 : game.player2);
         var ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
-        console.log(Powerup.prototype.available[ndx])
+        while(Powerup.prototype.available[ndx] !== Shield && 
+            p.hasPowerup(Powerup.prototype.available[ndx])) {
+            ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
+        }
+        console.log(p.powerups, Powerup.prototype.available[ndx]);
+
         return Powerup.prototype.available[ndx];
     };
 })();
