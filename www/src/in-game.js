@@ -68,12 +68,6 @@ InGame.prototype.setJuiceAndAdd = function() {
     this.expPerWin = 50;
 
     switch (this.juiceLevel) {
-        case 13:
-        case 12:
-        case 11:
-        case 10:
-        case 9:
-            break;
         case 8:
             this.juice.background = this.background;
         case 7:
@@ -97,6 +91,19 @@ InGame.prototype.setJuiceAndAdd = function() {
             this.player2.juice.color = true;
             this.ball.juice.bounce = true;
             break;
+        default:
+            this.ball.juice.color = true;
+            this.juice.countdown = true;
+            this.juice.expBarColor = true;
+            this.ball.juice.trail = true;
+            this.player1.juice.bounce = true;
+            this.player2.juice.bounce = true;
+            this.expPerHit = 10;
+            this.expPerWin = 40;
+            this.ball.juice.sound = true;
+            this.player1.juice.color = true;
+            this.player2.juice.color = true;
+            this.ball.juice.bounce = true;
     }
 
     this.juiceLevel ++;

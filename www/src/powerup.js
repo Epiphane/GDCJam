@@ -217,7 +217,7 @@ var Magnet = function() {
 };
 
 Magnet.prototype.constructor = Magnet;
-Magnet.prototype.name = "Magnet";
+Magnet.prototype.name = "MAGNET";
 Magnet.prototype.icon = makeIcon("magnet");
 
 Magnet.prototype.approach = function(dx, dy) {
