@@ -214,13 +214,14 @@ ReverseControls.prototype.done = function() {
 
 var Magnet = function() { 
     Powerup.apply(this, arguments);
+    this.uses = 5;
 };
 
 Magnet.prototype.constructor = Magnet;
 Magnet.prototype.name = "MAGNET";
 Magnet.prototype.icon = makeIcon("magnet");
 
-Magnet.prototype.approach = function(dx, dy) {
+Magnet.prototype.approach = Magnet.prototype.moveAway = function(dx, dy) {
     dy = this.player.getY() + this.player.getHeight() / 2 - this.game.ball.getY();
 
     this.game.ball.moveY(dy / 40);
