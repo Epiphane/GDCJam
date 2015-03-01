@@ -105,6 +105,42 @@ var chooseDOWNREV = new buzz.sound("./asset/sound/chooseDOWN-REV", {
 });
 
 
+var chooseUP2 = new buzz.sound("./asset/sound/chooseUP", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var chooseDOWN2 = new buzz.sound("./asset/sound/chooseDOWN", {
+    formats: [ "mp3", "wav" ],
+    preload: true,
+    autoplay: false
+});
+
+var chooseUPREV2 = new buzz.sound("./asset/sound/chooseUP-REV", {
+    formats: [ "mp3"],
+    preload: true,
+    autoplay: false
+});
+
+var chooseDOWNREV2 = new buzz.sound("./asset/sound/chooseDOWN-REV", {
+    formats: [ "mp3"],
+    preload: true,
+    autoplay: false
+});
+
+var readySound = new buzz.sound("./asset/sound/ready", {
+    formats: [ "mp3", "wav"],
+    preload: true,
+    autoplay: false
+});
+
+var readySound2 = new buzz.sound("./asset/sound/ready", {
+    formats: [ "mp3", "wav"],
+    preload: true,
+    autoplay: false
+});
+
 /** POWER UPS **/
 
 var fireChosen = new buzz.sound("./asset/sound/fire-choose", {
@@ -158,7 +194,7 @@ var ghostChosen = new buzz.sound("./asset/sound/ghost-choose", {
     autoplay: false
 });
 
-var sheildChosen = new buzz.sound("./asset/sound/shield-choose", {
+var sheildChosen = new buzz.sound("./asset/sound/shield-chosen", {
     formats: [ "mp3", "wav" ],
     preload: true,
     autoplay: false
