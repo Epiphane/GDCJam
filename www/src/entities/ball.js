@@ -30,6 +30,8 @@ function Ball(x, y, radius, speed) {
         speedup: false,
         sound: false
     };
+
+    this.opacity = 1;
 }
 
 Ball.prototype.getX = function() { return this.shape.pos.x; };
@@ -51,6 +53,7 @@ Ball.prototype.bounce = function() {
     }
 
     this.speedMult = 1;
+    this.opacity = 1;
 };
 
 Ball.prototype.normalizeVelocity = function() {
@@ -192,7 +195,7 @@ Ball.prototype.update = function(game) {
         }
 
         game.player1.ballDist(this.getX(), this.getY(), this.velocity.x < 0);
-        game.player1.ballDist(this.getX(), this.getY(), this.velocity.x > 0);
+        game.player2.ballDist(this.getX(), this.getY(), this.velocity.x > 0);
 
         var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
         //console.log(speed);
@@ -227,6 +230,8 @@ Ball.prototype.update = function(game) {
 };
 
 Ball.prototype.draw = function(context) {
+    context.globalAlpha = this.opacity;
+
     for(var t = 0; t < this.trail.length; t ++) {
         this.trail[t].draw(context);
     }
@@ -263,4 +268,5 @@ Ball.prototype.draw = function(context) {
 
     // restore to original state
     context.restore();
+    context.globalAlpha = 1;
 }

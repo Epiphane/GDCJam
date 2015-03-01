@@ -90,11 +90,15 @@ Paddle.prototype.ballDist = function(ballX, ballY, approaching) {
     var dx = Math.abs(ballX - this.getX() + this.getWidth() / 2) / gameSize.width;
     var dy = Math.abs(ballY - this.getY() + this.getHeight() / 2) / gameSize.height;
 
+    dx = dx * 1.2 - 0.1;
+    if (dx < 0) dx = 0;
+    if (dx > 1) dx = 1;
+
     for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
         if (approaching)
             this.powerups[ndx].approach(dx, dy);
         else
-            this.powerups[ndx].moveAway(dx, dy);
+            this.powerups[ndx].moveAway(1 - dx, 1 - dy);
     }
 };
 
