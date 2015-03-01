@@ -228,11 +228,12 @@ Magnet.prototype.approach = function(dx, dy) {
 Powerup.prototype.available = [Magnet, WideBar, Shield, GhostBall, FireBall, IceBall, Portals, ReverseControls];
 
 (function() {
-    Powerup.getRandomPowerup = function(game, player) {
+    Powerup.getRandomPowerup = function(game, player, other) {
         var p = (player === 1 ? game.player1 : game.player2);
         var ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
         while(Powerup.prototype.available[ndx] !== Shield && 
-            p.hasPowerup(Powerup.prototype.available[ndx])) {
+            p.hasPowerup(Powerup.prototype.available[ndx]) &&
+            Powerup.prototype.available[ndx] !== other) {
             ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
         }
 
