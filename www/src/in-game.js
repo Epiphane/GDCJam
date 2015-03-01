@@ -4,6 +4,13 @@ function InGame() {
     this.p1Score = 0;
     this.p2Score = 0;
 
+
+    this.portals = false;
+    this.portal1 = {x: 0, y: 0, width: 0};
+    this.portal2 = {x: 0, y: 0, width: 0};
+
+    this.shape1 = null;
+    this.shape2 = null;
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
     this.timeToGetReady = 100;
@@ -542,6 +549,12 @@ InGame.prototype.draw = function(context) {
         this.ball.draw(context);
     }
     else {
+
+        if (this.portals) {
+            context.fillStyle = "white";
+            context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
+            context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
+        }
 
         if (!this.gameDone) {
             this.drawPowerupArrows();

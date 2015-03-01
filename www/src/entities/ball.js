@@ -146,8 +146,42 @@ Ball.prototype.update = function(game) {
             this.playRandomWall();
         }
 
-        // Check for paddle collisions
         var collision = new SAT.Response();
+
+        if (game.portals) {
+            if (SAT.testPolygonCircle(game.shape1, this.shape, collision) ||
+                SAT.testPolygonCircle(game.shape2, this.shape, collision)) {
+                // Portal 1 (From the Left)
+                if (this.velocity.x > 0 && this.getX() < gameSize.width / 2) {
+                    //console.log("case 1");
+                    this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
+                    this.shape.pos.y = game.portal2.y + 50;
+                }
+                // Portal 2 (From the Right)
+                else if (this.velocity.x < 0 && this.getX() > gameSize.width / 2) {
+                    //console.log("case 2");
+                    this.shape.pos.x = game.portal1.x - this.getSize() - 5;
+                    this.shape.pos.y = game.portal1.y + 50;
+                }
+                // Portal 1 (From the Right)
+                else if (this.velocity.x < 0 && this.getX() < gameSize.width / 2) {
+                    //console.log("case 3:" + this.velocity.x);
+                    this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
+                    this.shape.pos.y = game.portal2.y + 50;        
+                    this.velocity.x *= -1;    
+                }
+                // Portal 2 (From the Left)
+                else if (this.velocity.x > 0 && this.getX() > gameSize.width / 2) {
+                    //console.log("case 4: " + this.velocity.x);
+                    this.shape.pos.x = game.portal1.x - this.getSize() - 5;
+                    this.shape.pos.y = game.portal1.y + 50;        
+                    this.velocity.x *= -1;  
+                }
+            }
+        }
+
+        // Check for paddle collisions
+        collision = new SAT.Response();
         // Player 1
         if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
             if (collision.overlapV.x) {
