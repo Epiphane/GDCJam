@@ -141,6 +141,7 @@ InGame.prototype.init = function() {
     this.setJuiceAndAdd();
 };
 
+var frigginChosePow = 0;
 InGame.prototype.giveExperience = function(player, exp) {
     this.experience[player] += (exp || this.expPerHit);
 
@@ -158,11 +159,16 @@ InGame.prototype.giveExperience = function(player, exp) {
 InGame.prototype.selectPowerup = function(PowerupCstr) {
     // Reset powerup stuff
     
+    if (this.powerupChoice.player === 0) {
+        frigginChosePow = (frigginChosePow == 1) ? 0 : 1;
+    }
+    var powerY = (frigginChosePow == 1) ? gameSize.height - 80 - 42 : 80+60  ;
+    console.log("chose: " +frigginChosePow);
 
     if (this.powerupChoice.player === 0)
-        this.player1.addPowerup(new PowerupCstr(this, this.player1));
+        this.player1.addPowerup(new PowerupCstr(this, this.player1), ARROW_MARGIN - 24, powerY);
     else
-        this.player2.addPowerup(new PowerupCstr(this, this.player2));
+        this.player2.addPowerup(new PowerupCstr(this, this.player2), gameSize.width - ARROW_MARGIN - 24, powerY);
 
     this.chosePowerupDelay = 50;
 };
@@ -291,14 +297,14 @@ InGame.prototype.update = function() {
                 downKey = KEYS.DOWN;
             }
 
-            if (keyDown[upKey] && this.powerupChoiceHeight > -1) {
+            if (keyDown[upKey] && this.powerupChoiceHeight > -1 && this.chosePowerupDelay == 0) {
                 this.powerupChoiceHeight += 2;
                 chooseDOWN.stop();
                 chooseDOWNREV.stop();
                 chooseUPREV.stop();
                 chooseUP.play();
             }
-            else if (keyDown[downKey] && this.powerupChoiceHeight < 1) {
+            else if (keyDown[downKey] && this.powerupChoiceHeight < 1 && this.chosePowerupDelay == 0) {
                 this.powerupChoiceHeight -= 2;
                 chooseUP.stop();
                 chooseUPREV.stop();
@@ -330,9 +336,9 @@ InGame.prototype.update = function() {
                 this.selectPowerup(this.powerupChoices[0].powerup);
                 var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
                 this.createFadeArrow(arrowX, 80, 1);
+                frigginChosePow = 0;
             }
-
-            if (this.powerupChoiceHeight < -this.timeToGetPowerup && this.chosePowerupDelay == 0) {
+            else if (this.powerupChoiceHeight < -this.timeToGetPowerup && this.chosePowerupDelay == 0) {
                 chooseUP.stop();
                 chooseUPREV.stop();
                 chooseDOWN.stop();
@@ -340,6 +346,7 @@ InGame.prototype.update = function() {
                 this.selectPowerup(this.powerupChoices[1].powerup);
                 var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
                 this.createFadeArrow(arrowX, 80, -1);
+                frigginChosePow = 1;
             }
         }
 
