@@ -4,8 +4,6 @@ function InGame() {
     this.p1Score = 0;
     this.p2Score = 0;
 
-    this.p1shield = false;
-    this.p2shield = false;
 
     this.portals = false;
     this.portal1 = {x: 0, y: 0, width: 0};
@@ -17,7 +15,8 @@ function InGame() {
     this.timeToGetPowerup = 100;
     this.timeToGetReady = 100;
 
-    this.experience = [0, 90];
+    this.expPerHit = 25;
+    this.experience = [0, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -27,14 +26,65 @@ function InGame() {
 
     this.cardFrame = 0;
     this.cardAlpha = 2;
-    this.scoreToWin = 5;
 
     this.p1ReadyHeight = 0;
     this.p2ReadyHeight = 0;
     this.p1Ready = false;
     this.p2Ready = false;
     this.readyToStart = false;
+    this.scoreToWin = 7;
+
+    this.juiceLevel = -1;
+
+    this.background = new Image();
+    this.background.src = "http://placekitten.com/g/1024/768";
 }
+
+InGame.prototype.setJuiceAndAdd = function() {
+    this.ball.juice = {
+        color: false,
+        trail: false,
+        bounce: false,
+        speedup: true,
+        sound: false
+    };
+
+    this.player1.juice = this.player2.juice = {
+        color: false,
+        bounce: false
+    };
+
+    this.juice = {
+        background: false,
+        expBarColor: false,
+        countdown: false
+    };
+
+    switch (this.juiceLevel) {
+        case 7:
+        case 6:
+            this.juice.background = this.background;
+        case 5:
+            this.ball.juice.color = true;
+        case 4:
+            this.juice.countdown = true;
+        case 3:
+            this.juice.expBarColor = true;
+        case 2:
+            this.ball.juice.trail = true;
+        case 1:
+            this.player2.juice.color = true;
+            this.player1.juice.bounce = true;
+            this.ball.juice.sound = true;
+        case 0:
+            this.player1.juice.color = true;
+            this.player2.juice.bounce = true;
+            this.ball.juice.bounce = true;
+            break;
+    }
+
+    this.juiceLevel ++;
+};
 
 InGame.prototype.init = function() {
     var distFromEdge = 20;
@@ -47,19 +97,6 @@ InGame.prototype.init = function() {
     this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
                          gameSize.height / 2 - ballSize / 2,
                          ballSize, this.speed);
-
-    this.ball.juice = {
-        color: true,
-        trail: true,
-        bounce: true,
-        speedup: true,
-        sound: true
-    };
-
-    this.player1.juice = this.player2.juice = {
-        color: true,
-        bounce: true
-    };
 
     this.player1.setPowerups(this.powerups[0]);
     this.player2.setPowerups(this.powerups[1]);
@@ -84,28 +121,20 @@ InGame.prototype.init = function() {
     this.cardFrame = 0;
     this.cardAlpha = 2;
 
-    this.juice = {
-        background: false,
-        expBarColor: true,
-        countdown: true
-    };
-
-    this.juice.background = new Image();
-    this.juice.background.src = "http://placekitten.com/g/1024/768";
-
     this.fadeArrows = [];
+    this.setJuiceAndAdd();
 };
 
 InGame.prototype.giveExperience = function(player) {
-    this.experience[player] += 10;
+    this.experience[player] += this.expPerHit;
 
     if (this.experience[player] >= 100) {
         this.pause = true;
 
         this.powerupChoice.player = player;
         this.powerupChoice.time = this.powerupChoice.choice = 0;
-        this.powerupChoices.push(new PowerupOption(player, 0, Powerup.getRandomPowerup(player)));
-        this.powerupChoices.push(new PowerupOption(player, 1, Powerup.getRandomPowerup(player)));
+        this.powerupChoices.push(new PowerupOption(player, 0, Powerup.getRandomPowerup(this, player + 1)));
+        this.powerupChoices.push(new PowerupOption(player, 1, Powerup.getRandomPowerup(this, player + 1)));
     }
 };
 
@@ -353,8 +382,7 @@ InGame.prototype.drawExperiences = function() {
     grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
 
     if (!this.juice.expBarColor) {
-        grds[0] = "rgba(255, 255, 0, 1)";
-        grds[1] = "rgba(255, 255, 0, 1)";
+        grds[0] = grds[1] = "rgba(100, 100, 100, 1)";
     }
 
     var padding = 50;

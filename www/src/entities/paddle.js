@@ -39,6 +39,26 @@ Paddle.prototype.setPowerups = function(powerups) {
     }
 }
 
+Paddle.prototype.hasPowerup = function(powerup) {
+    for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
+        if (this.powerups[ndx].constructor === powerup) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Paddle.prototype.removePowerup = function(powerup) {
+    for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
+        if (this.powerups[ndx].constructor === powerup) {
+            this.powerups[ndx].done();
+            this.powerups.splice(ndx, 1);
+            return;
+        }
+    }
+}
+
 Paddle.prototype.getX = function() { return this.shape.pos.x; };
 Paddle.prototype.getY = function() { return this.shape.pos.y; };
 Paddle.prototype.getWidth = function() { return this.width; };
@@ -148,7 +168,7 @@ Paddle.prototype.draw = function(context) {
             context.drawImage(this.powerups[ndx].__proto__.icon, 
                               powerupX, gameSize.height - (20 + ICON_WIDTH));
 
-            if (gameSize.width / 2 - this.y > 0)
+            if (this.player === 1)
                 powerupX += (20 + ICON_WIDTH);
             else
                 powerupX -= (20 + ICON_WIDTH);
