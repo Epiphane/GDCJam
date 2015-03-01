@@ -173,8 +173,15 @@ Paddle.prototype.draw = function(context) {
         powerupX = gameSize.width - (20 + ICON_WIDTH);
     for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
         if (this.powerups[ndx].__proto__.icon) {
+            var targetX = powerupX;
+            var targetY = gameSize.height - (20 + ICON_WIDTH);
+            var diffX = targetX - this.powerups[ndx].x;
+            var diffY = targetY - this.powerups[ndx].y;
+
             context.drawImage(this.powerups[ndx].__proto__.icon, 
-                              powerupX, gameSize.height - (20 + ICON_WIDTH));
+                              this.powerups[ndx].x, this.powerups[ndx].y);
+            this.powerups[ndx].x += diffX / 6;
+            this.powerups[ndx].y += diffY / 6;
 
             if (this.player === 1)
                 powerupX += (20 + ICON_WIDTH);
