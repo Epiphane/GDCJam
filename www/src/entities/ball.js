@@ -246,7 +246,8 @@ Ball.prototype.update = function(game) {
             }
 
             newTrail = new BallTrail(this.getX(), this.getY(), 25,
-                       Math.atan(this.velocity.y / this.velocity.x), 60, minHue, maxHue);
+                       this.velocity.y, this.velocity.x, 60, minHue, maxHue,
+                       this.speedMult > 1, this.speedMult < 1);
             
             newTrail.juice.color = this.juice.color;
             if (this.otherFrame || this.juice.color) {
@@ -297,7 +298,7 @@ Ball.prototype.draw = function(context) {
     else {
         if (this.speedMult > 1)
             context.fillStyle = "rgba(255, 0, 0, 1)";
-        else if (this.speedMult > 1)
+        else if (this.speedMult < 1)
             context.fillStyle = "rgba(0, 0, 255, 1)";
         else
             context.fillStyle = "rgba(255, 255, 255, 1)";

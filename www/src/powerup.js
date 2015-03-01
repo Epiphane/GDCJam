@@ -46,7 +46,7 @@ Powerup.prototype.done = function() {};
 var WideBar = function() { Powerup.apply(this, arguments); };
 
 WideBar.prototype.constructor = WideBar;
-WideBar.prototype.name = "Wide Paddle";
+WideBar.prototype.name = "WIDE PADDLE";
 WideBar.prototype.icon = makeIcon("expand42");
 
 WideBar.prototype.start = function() {
@@ -140,7 +140,7 @@ var Portals = function() {
 
 Portals.prototype.constructor = Portals;
 Portals.prototype.name = "PORTALS";
-Portals.prototype.icon = makeIcon("expand42");
+Portals.prototype.icon = makeIcon("portal");
 
 Portals.prototype.action = function() {
     if (this.uses > 0 && !this.game.portals) {
@@ -211,42 +211,21 @@ ReverseControls.prototype.done = function() {
     }
 }
 
-// var ReverseControls = function() { 
-//     Powerup.apply(this, arguments);
-//     this.uses = 4;
-// };
+var Magnet = function() { 
+    Powerup.apply(this, arguments);
+};
 
-// ReverseControls.prototype.constructor = ReverseControls;
-// ReverseControls.prototype.name = "Move Horizontally";
-// ReverseControls.prototype.description = "Free as a bird!";
-// ReverseControls.prototype.icon = makeIcon("reverse");
+Magnet.prototype.constructor = Magnet;
+Magnet.prototype.name = "Magnet";
+Magnet.prototype.icon = makeIcon("magnet");
 
-// ReverseControls.prototype.start = function() {
-//     if (this.player.player === 1) {
-//         KEYS.UP = 40;
-//         KEYS.DOWN = 38;
-//         this.game.player2.angle = Math.PI;
-//     }
-//     else {
-//         KEYS.W = 83;
-//         KEYS.S = 87;
-//         this.game.player1.angle = Math.PI;
-//     }
-// }
-// ReverseControls.prototype.done = function() {
-//     if (this.player.player === 1) {
-//         KEYS.DOWN = 40;
-//         KEYS.UP = 38;
-//         this.game.player2.angle = Math.PI;
-//     }
-//     else {
-//         KEYS.S = 83;
-//         KEYS.W = 87;
-//         this.game.player1.angle = Math.PI;
-//     }
-// }
+Magnet.prototype.approach = function(dx, dy) {
+    dy = this.player.getY() + this.player.getHeight() / 2 - this.game.ball.getY();
 
-Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, Portals, ReverseControls];
+    this.game.ball.moveY(dy / 40);
+};
+
+Powerup.prototype.available = [Magnet, WideBar, Shield, GhostBall, FireBall, IceBall, Portals, ReverseControls];
 
 (function() {
     Powerup.getRandomPowerup = function(game, player) {
@@ -256,7 +235,6 @@ Powerup.prototype.available = [WideBar, Shield, GhostBall, FireBall, IceBall, Po
             p.hasPowerup(Powerup.prototype.available[ndx])) {
             ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
         }
-        console.log(p.powerups, Powerup.prototype.available[ndx]);
 
         return Powerup.prototype.available[ndx];
     };

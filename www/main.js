@@ -14,6 +14,9 @@ gameSize = { width: 1024, height: 768 };
 var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
 
+var juice = new Image();
+juice.src = "./asset/juice.png";
+
 // State
 currState = new TitleScreen();
 changeState(currState);
