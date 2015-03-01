@@ -44,7 +44,7 @@ Powerup.prototype.done = function() {};
 
 (function() {
     Powerup.getRandomPowerup = function() {
-        return Shield;
+        return Portals;
     };
 })();
 
@@ -131,4 +131,37 @@ Shield.prototype.action = function() {
     }
 
     this.uses--;
+};
+
+var Portals = function() { 
+    Powerup.apply(this, arguments);
+    this.uses = 5; 
+};
+
+Portals.prototype.constructor = Portals;
+Portals.prototype.name = "PORTALS";
+Portals.prototype.description = "Description";
+Portals.prototype.icon = makeIcon("expand42");
+
+Portals.prototype.action = function() {
+    if (this.uses > 0 && !this.game.portals) {
+        this.game.portals = true;
+
+        this.game.portal1.x = gameSize.width / 2 - 10 - Math.random() * gameSize.width / 8;
+        this.game.portal1.y = Math.random() * (gameSize.height - 100);
+        this.game.portal1.width = this.game.ball.getSize() + 10;
+
+        this.game.portal2.x = gameSize.width / 2 + 10 + Math.random() * gameSize.width / 8;
+        this.game.portal2.y = Math.random() * (gameSize.height - 100);
+        this.game.portal2.width = this.game.ball.getSize() + 10;
+
+        this.game.shape1 = new SAT.Box(new SAT.Vector(this.game.portal1.x, this.game.portal1.y), this.game.ball.getSize() + 10, 100).toPolygon();
+        this.game.shape2 = new SAT.Box(new SAT.Vector(this.game.portal2.x, this.game.portal2.y), this.game.ball.getSize() + 10, 100).toPolygon();
+    }
+
+    this.uses--;
+
+    if (!this.uses) {
+        this.game.portals = false;
+    }
 };

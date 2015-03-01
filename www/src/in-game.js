@@ -7,6 +7,12 @@ function InGame() {
     this.p1shield = false;
     this.p2shield = false;
 
+    this.portals = false;
+    this.portal1 = {x: 0, y: 0, width: 0};
+    this.portal2 = {x: 0, y: 0, width: 0};
+
+    this.shape1 = null;
+    this.shape2 = null;
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
 
@@ -34,6 +40,9 @@ InGame.prototype.init = function() {
     this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
                          gameSize.height / 2 - ballSize / 2,
                          ballSize, this.speed);
+
+    //this.shape1 = new SAT.Box(new SAT.Vector(0, 0), 0, 0).toPolygon();
+    //this.shape2 = new SAT.Box(new SAT.Vector(0, 0), 0, 0).toPolygon();
 
     this.player1.setPowerups(this.powerups[0]);
     this.player2.setPowerups(this.powerups[1]);
@@ -360,6 +369,12 @@ InGame.prototype.draw = function(context) {
         this.player2.draw(context);
 
         this.ball.draw(context);
+
+        if (this.portals) {
+            context.fillStyle = "white";
+            context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
+            context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
+        }
 
         // Draw countdown
         if (this.countdown > 200) {
