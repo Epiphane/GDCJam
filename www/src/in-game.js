@@ -16,6 +16,7 @@ function InGame() {
     this.timeToGetReady = 100;
 
     this.expPerHit = 25;
+    this.expPerWin = 50;
     this.experience = [0, 0];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
@@ -63,6 +64,9 @@ InGame.prototype.setJuiceAndAdd = function() {
         countdown: false
     };
 
+    this.expPerHit = 25;
+    this.expPerWin = 50;
+
     switch (this.juiceLevel) {
         case 13:
         case 12:
@@ -83,6 +87,8 @@ InGame.prototype.setJuiceAndAdd = function() {
         case 2:
             this.ball.juice.trail = true;
         case 1:
+            this.expPerHit = 10;
+            this.expPerWin = 40;
             this.player2.juice.color = true;
             this.player1.juice.bounce = true;
             this.ball.juice.sound = true;
@@ -135,16 +141,17 @@ InGame.prototype.init = function() {
     this.setJuiceAndAdd();
 };
 
-InGame.prototype.giveExperience = function(player) {
-    this.experience[player] += this.expPerHit;
+InGame.prototype.giveExperience = function(player, exp) {
+    this.experience[player] += (exp || this.expPerHit);
 
     if (this.experience[player] >= 100) {
         this.pause = true;
 
         this.powerupChoice.player = player;
         this.powerupChoice.time = this.powerupChoice.choice = 0;
-        this.powerupChoices.push(new PowerupOption(player, 0, Powerup.getRandomPowerup(this, player + 1)));
-        this.powerupChoices.push(new PowerupOption(player, 1, Powerup.getRandomPowerup(this, player + 1)));
+        var opt1 = new PowerupOption(player, 0, Powerup.getRandomPowerup(this, player + 1));
+        this.powerupChoices.push(opt1);
+        this.powerupChoices.push(new PowerupOption(player, 1, Powerup.getRandomPowerup(this, player + 1)), opt1);
     }
 };
 
@@ -393,9 +400,11 @@ InGame.prototype.update = function() {
             if (this.ball.win) {
                 if (this.ball.win === 1) {
                     this.p1Score++;
+                    this.giveExperience(0, this.expPerWin);
                 }
                 else {
                     this.p2Score++;
+                    this.giveExperience(1, this.expPerWin);
                 }
 
                 this.pause = true;
@@ -430,6 +439,8 @@ InGame.prototype.drawExperiences = function() {
 
     for(var i = 0; i < 2; i ++) {
         // Fill with gradient
+        if (this.expWidth[i] > 100)
+            this.expWidth[i] = 100;
         var diff = this.experience[i] - this.expWidth[i];
         this.expWidth[i] += diff / 7;
 
