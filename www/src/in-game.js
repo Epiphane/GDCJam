@@ -15,8 +15,9 @@ function InGame() {
     this.shape2 = null;
     // Time you must hold a key to confirm your powerup
     this.timeToGetPowerup = 100;
+    this.timeToGetReady = 100;
 
-    this.experience = [90, 90];
+    this.experience = [0, 90];
     this.expWidth = [0, 0];
     this.powerups = [[], []];
     this.particles = [];
@@ -27,6 +28,12 @@ function InGame() {
     this.cardFrame = 0;
     this.cardAlpha = 2;
     this.scoreToWin = 5;
+
+    this.p1ReadyHeight = 0;
+    this.p2ReadyHeight = 0;
+    this.p1Ready = false;
+    this.p2Ready = false;
+    this.readyToStart = false;
 }
 
 InGame.prototype.init = function() {
@@ -41,8 +48,18 @@ InGame.prototype.init = function() {
                          gameSize.height / 2 - ballSize / 2,
                          ballSize, this.speed);
 
-    //this.shape1 = new SAT.Box(new SAT.Vector(0, 0), 0, 0).toPolygon();
-    //this.shape2 = new SAT.Box(new SAT.Vector(0, 0), 0, 0).toPolygon();
+    this.ball.juice = {
+        color: true,
+        trail: true,
+        bounce: true,
+        speedup: true,
+        sound: true
+    };
+
+    this.player1.juice = this.player2.juice = {
+        color: true,
+        bounce: true
+    };
 
     this.player1.setPowerups(this.powerups[0]);
     this.player2.setPowerups(this.powerups[1]);
@@ -68,13 +85,15 @@ InGame.prototype.init = function() {
     this.cardAlpha = 2;
 
     this.juice = {
-        ballColor: false,
-        ballTrail: false,
-        playerColor: false,
-        ballSpeedup: false,
-        backgroundColor: false,
-        expBarColor: false
-    }
+        background: false,
+        expBarColor: true,
+        countdown: true
+    };
+
+    this.juice.background = new Image();
+    this.juice.background.src = "http://placekitten.com/g/1024/768";
+
+    this.fadeArrows = [];
 };
 
 InGame.prototype.giveExperience = function(player) {
@@ -111,6 +130,87 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function() {
+    // Fade the effect arrows if necessary
+    for (var ndx = 0; ndx < this.fadeArrows.length; ndx++) {
+        
+    }
+
+    // ask players to get ready
+    if (!this.readyToStart) {
+        if (!this.p1Ready) {
+            if (keyDown[KEYS.W] && this.p1ReadyHeight > -1) {
+                this.p1ReadyHeight += 2;
+                chooseDOWN.stop();
+                chooseDOWNREV.stop();
+                chooseUPREV.stop();
+                chooseUP.play();
+            }
+            else {
+                this.p1ReadyHeight *= 0.8;
+                if (chooseUP.getPercent() > 0) {
+                    chooseUPREV.play();
+                    chooseUPREV.setPercent(120 - chooseUP.getPercent());
+                }
+
+                if (chooseDOWN.getPercent() > 0) {
+                    chooseDOWNREV.play();
+                    chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
+                }
+
+                chooseUP.stop();
+                chooseDOWN.stop();
+            }
+
+            if (this.p1ReadyHeight > this.timeToGetReady) {
+                this.p1Ready = true;
+                readySound.play();
+                chooseUP.stop();
+                if (this.p2Ready) {
+                    this.readyToStart = true;
+                    this.readyDelay = 50;
+                }
+            }
+        }
+
+        if (!this.p2Ready) {
+            if (keyDown[KEYS.UP] && this.p2ReadyHeight > -1) {
+                this.p2ReadyHeight += 2;
+                chooseDOWN2.stop();
+                chooseDOWNREV2.stop();
+                chooseUPREV2.stop();
+                chooseUP2.play();
+            }
+            else {
+                this.p2ReadyHeight *= 0.8;
+                if (chooseUP2.getPercent() > 0) {
+                    chooseUPREV2.play();
+                    chooseUPREV2.setPercent(120 - chooseUP2.getPercent());
+                }
+
+                if (chooseDOWN2.getPercent() > 0) {
+                    chooseDOWNREV2.play();
+                    chooseDOWNREV2.setPercent(120 - chooseDOWN2.getPercent());
+                }
+
+                chooseUP2.stop();
+                chooseDOWN2.stop();
+            }
+
+            if (this.p2ReadyHeight > this.timeToGetReady) {
+                this.p2Ready = true;
+                readySound2.play();
+                chooseUP2.stop();
+                if (this.p1Ready) {
+                    this.readyToStart = true;
+                    this.readyDelay = 50;
+                }
+            }
+        }
+
+        return;
+    }
+
+
     if (this.powerupChoices.length > 0) {
         var upKey, downKey;
         if (this.powerupChoice.player === 0) {
@@ -252,24 +352,43 @@ InGame.prototype.drawExperiences = function() {
     grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
     grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
 
+    if (!this.juice.expBarColor) {
+        grds[0] = "rgba(255, 255, 0, 1)";
+        grds[1] = "rgba(255, 255, 0, 1)";
+    }
 
-    var padding = 20;
-    var expBarWidth = gameSize.width / 2 - (2 * padding + 50);
+    var padding = 50;
+    var expBarHeight = 23;
+    var expBarWidth = gameSize.width / 2 - (2 * padding + 75);
 
     for(var i = 0; i < 2; i ++) {
         // Fill with gradient
-        if (this.expWidth[i] < this.experience[i])
-            this.expWidth[i] ++;
-        if (this.expWidth[i] > this.experience[i])
-            this.expWidth[i] -= 2;
+        var diff = this.experience[i] - this.expWidth[i];
+        this.expWidth[i] += diff / 7;
 
         var p2Width = expBarWidth * this.expWidth[i] / 100;
         context.fillStyle = grds[i];
         if (i === 0)
-            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, padding * 2);
+            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, expBarHeight);
         else
-            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, padding * 2);
+            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, expBarHeight);
     }
+
+    // Draw the gray box around em
+    var boxMargin = 5;
+    var boxY = padding - boxMargin;
+    var boxWidth = expBarWidth + boxMargin * 2;
+    var boxHeight = expBarHeight + boxMargin * 2;
+    context.strokeStyle = "rgb(100, 100, 100)";
+    context.lineWidth = 3;
+    context.strokeRect(padding - boxMargin,
+            boxY,
+            boxWidth,
+            boxHeight);
+    context.strokeRect(gameSize.width - padding - boxMargin - expBarWidth,
+            boxY,
+            boxWidth,
+            boxHeight);
 };
 
 var ARROW_SHAFT_WIDTH = 20;
@@ -277,7 +396,7 @@ var ARROW_TIP_BASE_WIDTH = 40;
 var ARROW_HEAD_LENGTH = 100;
 var ARROW_SHAFT_HEIGHT = 30;
 
-function drawArrow(arrowX, fillPercent, yScale) {
+function drawArrow(arrowX, fillPercent, yScale, fillStyle, strokeStyle) {
    // FILL ARROW
     context.save();
     
@@ -302,7 +421,7 @@ function drawArrow(arrowX, fillPercent, yScale) {
     context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
     context.closePath();
 
-    context.fillStyle = "orange";
+    context.fillStyle = fillStyle;
     context.fill();
     context.restore();
 
@@ -323,37 +442,70 @@ function drawArrow(arrowX, fillPercent, yScale) {
     context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
     context.closePath();
 
-    context.strokeStyle = "rgb(200, 200, 200)";
+    context.strokeStyle = strokeStyle;
     context.lineWidth = 5;
     context.stroke();
 
     context.restore();
- }
+}
 
+InGame.prototype.createFadeArrow = function(x, y, scale) {
+    this.fadeArrows.push( {x: x, y: y, scale: scale, alpha: 0.8 } );
+}
+
+var ARROW_MARGIN = 150;
 InGame.prototype.drawPowerupArrows = function() {
     var arrowX = 0;
     if (this.powerupChoices.length > 0) {
         if (this.powerupChoice.player == 0) {
-            arrowX = 150;
+            arrowX = ARROW_MARGIN;
         }
         else {
-            arrowX = gameSize.width - 150;
+            arrowX = gameSize.width - ARROW_MARGIN;
         }
 
         var fillHeight = this.powerupChoiceHeight / this.timeToGetPowerup;
+        var arrowGradient = context.createLinearGradient(150.000, 0.000, 150.000, 300.000);
+      
+        // Add colors
+        arrowGradient.addColorStop(0.000, 'rgba(255, 255, 86, 1.000)');
+        arrowGradient.addColorStop(1.000, 'rgba(127, 0, 127, 1.000)');
 
         if (fillHeight < 0) {
-            drawArrow(arrowX, -fillHeight, -1);
-            drawArrow(arrowX, 0,            1);
+            drawArrow(arrowX, -fillHeight, -1, arrowGradient, "white");
+            drawArrow(arrowX, 0,            1, arrowGradient, "white");
         }
         else {
-            drawArrow(arrowX, 0,           -1);
-            drawArrow(arrowX, fillHeight,   1);
+            drawArrow(arrowX, 0,           -1, arrowGradient, "white");
+            drawArrow(arrowX, fillHeight,   1, arrowGradient, "white");
         }
     }
 }
 
+InGame.prototype.drawReadyArrows = function() {
+    var readyGradient = context.createLinearGradient(150.000, 0.000, 150.000, 300.000);
+
+    // Add colors
+    readyGradient.addColorStop(0.000, 'rgba(33, 127, 7, 1.000)');
+    readyGradient.addColorStop(0.994, 'rgba(0, 255, 0, 1.000)');
+
+    // P1 arrow
+    var p1Fill = this.p1ReadyHeight / this.timeToGetReady;
+    drawArrow(ARROW_MARGIN, p1Fill, 1, readyGradient, "white");
+
+    // P2 arrow
+    var p2Fill = this.p2ReadyHeight / this.timeToGetReady;
+    drawArrow(gameSize.width - ARROW_MARGIN, p2Fill, 1, readyGradient, "white");
+}
+
 InGame.prototype.draw = function(context) {
+    if (this.juice.background && !this.gameDone) {
+        context.drawImage(this.juice.background, 0, 0, gameSize.width, gameSize.height);
+
+        context.fillStyle = "rgba(0, 0, 0, 0.7)";
+        context.fillRect(0, 0, gameSize.width, gameSize.height);
+    }
+
     var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
 
     context.fillStyle = "white";
@@ -361,14 +513,14 @@ InGame.prototype.draw = function(context) {
     var scoreWidth = context.measureText(scores).width;
     context.fillText(scores, (gameSize.width / 2) - (scoreWidth / 2), 50);
 
-    if (!this.gameDone) {
-        this.drawPowerupArrows();
-        this.drawExperiences();
-
+    if (!this.readyToStart) {
+        this.drawReadyArrows();
         this.player1.draw(context);
         this.player2.draw(context);
 
         this.ball.draw(context);
+    }
+    else {
 
         if (this.portals) {
             context.fillStyle = "white";
@@ -376,63 +528,76 @@ InGame.prototype.draw = function(context) {
             context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
         }
 
-        // Draw countdown
-        if (this.countdown > 200) {
-            if (this.countdown < 4000) {
-                var seconds = Math.floor(this.countdown / 1000);
-                if (this.numSoundsToPlay >= seconds) {
-                    this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
-                    this.numSoundsToPlay = this.numSoundsToPlay - 1;
+        if (!this.gameDone) {
+            this.drawPowerupArrows();
+            this.drawExperiences();
+
+            this.player1.draw(context);
+            this.player2.draw(context);
+
+            this.ball.draw(context);
+
+            // Draw countdown
+            if (this.countdown > 200) {
+                if (this.countdown < 4000) {
+                    var seconds = Math.floor(this.countdown / 1000);
+                    if (this.numSoundsToPlay >= seconds) {
+                        this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
+                        this.numSoundsToPlay = this.numSoundsToPlay - 1;
+                    }
+
+                    var text;
+                    if (this.countdown > 1000)
+                        text = seconds.toString();
+                    else
+                        text = 'GO!';
+
+                    var timeToNext = (this.countdown % 1000) / 1000;
+                    var maxSize = 600;
+                    var fontSize = maxSize - maxSize * timeToNext;
+
+                    if (!this.juice.countdown)
+                        fontSize = 200;
+
+                    context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
+                    context.font = fontSize + "pt Arial Black";
+                    var textSize = context.measureText(text);
+                    context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
+                            (gameSize.height / 2) + fontSize / 2);
                 }
+            }
 
-                var text;
-                if (this.countdown > 1000)
-                    text = seconds.toString();
-                else
-                    text = 'GO!';
-
-                var timeToNext = (this.countdown % 1000) / 1000;
-                var maxSize = 600;
-                var fontSize = maxSize - maxSize * timeToNext;
-
-                context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
-                context.font = fontSize + "pt Arial Black";
-                var textSize = context.measureText(text);
-                context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
-                                       (gameSize.height / 2) + fontSize / 2);
+            // Draw powerupChoices!
+            for (var i = 0; i < this.powerupChoices.length; i ++) {
+                this.powerupChoices[i].draw(context);
             }
         }
+        else {
+            if (keyDown[KEYS.SPACE])
+                changeState(new TitleScreen());
 
-        // Draw powerupChoices!
-        for (var i = 0; i < this.powerupChoices.length; i ++) {
-            this.powerupChoices[i].draw(context);
-        }
-    }
-    else {
-        if (keyDown[KEYS.SPACE])
-            changeState(new TitleScreen());
+            if (this.cardFrame % 3 === 0) {
+                for (var l = 0; l < this.particles.length; l ++) {
+                    this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
+                }
+                this.cardAlpha *= 0.99;
 
-        if (this.cardFrame % 3 === 0) {
-            for (var l = 0; l < this.particles.length; l ++) {
-                this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
             }
-            this.cardAlpha *= 0.99;
 
+            if (this.cardAlpha < 0.05) {
+                context.fillStyle = "rgba(0, 0, 0, 0.1)";
+                context.fillRect(0, 0, gameSize.width, gameSize.height);
+
+                if (this.particles.length > 0 && Math.random() < 0.3) {
+                    this.particles.splice(0, 1);
+
+                    if (this.particles.length === 0)
+                        setTimeout(function() {
+                            changeState(new TitleScreen());
+                        }, 1000);
+                }
+            }        
         }
-
-        if (this.cardAlpha < 0.05) {
-            context.fillStyle = "rgba(0, 0, 0, 0.1)";
-            context.fillRect(0, 0, gameSize.width, gameSize.height);
-
-            if (this.particles.length > 0 && Math.random() < 0.3) {
-                this.particles.splice(0, 1);
-
-                if (this.particles.length === 0)
-                    setTimeout(function() {
-                        changeState(new TitleScreen());
-                    }, 1000);
-            }
-        }        
     }
 };
 

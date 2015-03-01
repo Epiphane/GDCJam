@@ -35,6 +35,7 @@ function BallTrail(x, y, size, direction, life, minHue, maxHue) {
     this.life = life;
     this.maxLife = life;
     this.direction = direction;
+    this.juice = { color: false };
 
     // this.rgb = {
     //     r: Math.floor(Math.random() * 255),
@@ -42,7 +43,7 @@ function BallTrail(x, y, size, direction, life, minHue, maxHue) {
     //     b: Math.floor(Math.random() * 255),
     // };
     if (!minHue && !maxHue) {
-        this.rgb = HSVtoRGB(hue, 1, 1);
+        this.rgb = HSVtoRGB(hue, 0.6, 1);
         hue += 0.04;
         while (hue >= 1) {
             hue--;
@@ -53,7 +54,7 @@ function BallTrail(x, y, size, direction, life, minHue, maxHue) {
         if (hue < minHue || hue > maxHue) {
             hue = minHue;
         }
-        this.rgb = HSVtoRGB(hue, 1, 1);
+        this.rgb = HSVtoRGB(hue, 0.6, 1);
     }
 }
 
@@ -75,7 +76,12 @@ BallTrail.prototype.draw = function(context) {
     context.translate(this.getX(), this.getY());
     context.rotate(this.direction);
 
-    context.fillStyle = "rgba(" + this.rgb.r + ", " + this.rgb.g + ", " + this.rgb.b + ", " + this.life / this.maxLife + ")";
+    if (this.juice.color) {
+        context.fillStyle = "rgba(" + this.rgb.r + ", " + this.rgb.g + ", " + this.rgb.b + ", " + this.life / this.maxLife + ")";
+    }
+    else {
+        context.fillStyle = "rgba(255, 255, 255, " + this.life / this.maxLife + ")";
+    }
     context.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
 
     context.restore();
