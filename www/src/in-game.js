@@ -38,7 +38,7 @@ function InGame() {
 
     this.scoreToWin = 7;
 
-    this.juiceLevel = -1;
+    this.juiceLevel = 0;
 
     this.background = new Image();
     this.background.src = "http://placekitten.com/g/1024/768";
@@ -86,15 +86,15 @@ InGame.prototype.setJuiceAndAdd = function() {
             this.juice.expBarColor = true;
         case 2:
             this.ball.juice.trail = true;
+            this.player1.juice.bounce = true;
+            this.player2.juice.bounce = true;
         case 1:
             this.expPerHit = 10;
             this.expPerWin = 40;
-            this.player2.juice.color = true;
-            this.player1.juice.bounce = true;
             this.ball.juice.sound = true;
         case 0:
             this.player1.juice.color = true;
-            this.player2.juice.bounce = true;
+            this.player2.juice.color = true;
             this.ball.juice.bounce = true;
             break;
     }

@@ -167,6 +167,7 @@ Portals.prototype.action = function() {
 
 var GhostBall = function() { 
     Powerup.apply(this, arguments);
+    this.uses = 4;
 };
 
 GhostBall.prototype.constructor = GhostBall;
