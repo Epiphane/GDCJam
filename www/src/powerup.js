@@ -132,6 +132,9 @@ Shield.prototype.constructor = Shield;
 Shield.prototype.name = "SHIELD";
 Shield.prototype.icon = makeIcon("shield");
 Shield.prototype.action = function() {};
+Shield.prototype.start = Shield.prototype.done = function() {
+    this.game.uiNeedsUpdate = true;
+};
 
 var Portals = function() { 
     Powerup.apply(this, arguments);

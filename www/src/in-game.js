@@ -4,6 +4,8 @@ function InGame() {
     this.p1Score = 0;
     this.p2Score = 0;
 
+    var initialSize = { w: 20, h: 140 };
+    this.ballSize = 20;
 
     this.portals = false;
     this.portal1 = {x: 0, y: 0, width: 0};
@@ -42,6 +44,32 @@ function InGame() {
 
     this.background = new Image();
     this.background.src = "http://placekitten.com/g/1024/768";
+
+    this.player1 = new Paddle(0, 0, initialSize.w, initialSize.h);
+    this.player1.player = 1;
+    this.player2 = new Paddle(0, 0, initialSize.w, initialSize.h);
+    this.player2.player = 2;
+    this.ball = new Ball(0, 0, this.ballSize, this.speed);
+
+    // Draw UI offscreen so that text isn't rerendered every frame
+    this.ui = document.createElement('canvas');
+    this.ui.width = gameSize.width;
+    this.ui.height = gameSize.height;
+    this.uiContext = this.ui.getContext('2d');
+
+    this.uiNeedsUpdate = true;
+
+    this.leftShieldGrd = context.createLinearGradient(0.000, 150.000, 10.000, 150.000);
+
+    // Add colors
+    this.leftShieldGrd.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
+    this.leftShieldGrd.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
+
+    this.rightShieldGrd = context.createLinearGradient(gameSize.width - 10, 150.000, gameSize.width, 150.000);
+
+    // Add colors
+    this.rightShieldGrd.addColorStop(0.000, 'rgba(0, 0, 0, 0.000)');
+    this.rightShieldGrd.addColorStop(1.000, 'rgba(86, 170, 255, 1.000)');
 }
 
 InGame.prototype.setJuiceAndAdd = function() {
@@ -111,18 +139,15 @@ InGame.prototype.setJuiceAndAdd = function() {
 
 InGame.prototype.init = function() {
     var distFromEdge = 20;
-    var initialSize = { w: 20, h: 140 };
-    var ballSize = 20;
 
     // "Entities"
-    this.player1 = new Paddle(distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
-    this.player2 = new Paddle(gameSize.width - distFromEdge, gameSize.height / 2, initialSize.w, initialSize.h);
-    this.ball = new Ball(gameSize.width / 2 - ballSize / 2,
-            gameSize.height / 2 - ballSize / 2,
-            ballSize, this.speed);
-
-    this.player1.setPowerups(this.powerups[0]);
-    this.player2.setPowerups(this.powerups[1]);
+    this.player1.setX(distFromEdge);
+    this.player2.setX(gameSize.width - distFromEdge - this.player2.getWidth());
+    this.player1.setY(gameSize.height / 2 - this.player1.getHeight() / 2);
+    this.player2.setY(gameSize.height / 2 - this.player2.getHeight() / 2);
+    this.ball = new Ball(gameSize.width / 2 - this.ballSize / 2,
+            gameSize.height / 2 - this.ballSize / 2,
+            this.ballSize, this.speed);
 
     this.powerupChoices = [];
     this.powerupChoice = {
@@ -184,7 +209,7 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
  * Main animation loop!  Check for intersection, update rectangle
  *  objects, and draw to screen.
  */
-InGame.prototype.update = function() {
+InGame.prototype.update = function(dt) {
     // Fade the effect arrows if necessary
     for (var ndx = this.fadeArrows.length - 1; ndx >= 0; ndx--) {
         if (this.fadeArrows[ndx].scale < 0) {
@@ -204,6 +229,7 @@ InGame.prototype.update = function() {
         if (this.readyDelay == 0) {
             this.readyToStart = true;
             this.countdown = 4000;
+            this.pause = true;
         }
     }
 
@@ -375,12 +401,8 @@ InGame.prototype.update = function() {
         }
         else {
 
-            if (this.countdown && !this.gameDone) {
-                var thisTime = new Date();
-                var dt = thisTime - this.lastTime;
-                this.lastTime = thisTime;
-
-                this.countdown -= dt;
+            if (this.countdown && !this.gameDone && this.readyToStart) {
+                this.countdown -= dt * 25;
 
                 if (this.countdown <= 0) {
                     this.countdown = 0;
@@ -407,9 +429,9 @@ InGame.prototype.update = function() {
                 this.player1.accelerate(this.speed);
             }
 
-            this.player1.update();
-            this.player2.update();
-            this.ball.update(this);
+            this.player1.update(dt);
+            this.player2.update(dt);
+            this.ball.update(dt, this);
 
             if (this.ball.win) {
                 if (this.ball.win === 1) {
@@ -421,6 +443,7 @@ InGame.prototype.update = function() {
                     this.giveExperience(1, this.expPerWin);
                 }
 
+                this.uiNeedsUpdate = true;
                 this.pause = true;
                 this.init();
             }
@@ -428,23 +451,25 @@ InGame.prototype.update = function() {
     }
 };
 
-InGame.prototype.drawExperiences = function() {
-    var grds = [
-        context.createLinearGradient(0.000, 150.000, gameSize.width / 2 - 100, 150.000),
-        context.createLinearGradient(gameSize.width / 2 + 100, 150.000, gameSize.width, 150.000)
-    ];
-    grds[0].addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
-    grds[0].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-    grds[0].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-    grds[0].addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
+InGame.prototype.drawExperiences = function(context) {
+    var grds;
+    if (this.juice.expBarColor) {
+        grds = [
+            context.createLinearGradient(0.000, 150.000, gameSize.width / 2 - 100, 150.000),
+            context.createLinearGradient(gameSize.width / 2 + 100, 150.000, gameSize.width, 150.000)
+        ];
+        grds[0].addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
+        grds[0].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+        grds[0].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+        grds[0].addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
 
-    grds[1].addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
-    grds[1].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-    grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-    grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
-
-    if (!this.juice.expBarColor) {
-        grds[0] = grds[1] = "rgba(100, 100, 100, 1)";
+        grds[1].addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
+        grds[1].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+        grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+        grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
+    }
+    else {
+        grds = ["rgba(100, 100, 100, 1)", "rgba(100, 100, 100, 1)"];
     }
 
     var padding = 50;
@@ -452,11 +477,13 @@ InGame.prototype.drawExperiences = function() {
     var expBarWidth = gameSize.width / 2 - (2 * padding + 75);
 
     for(var i = 0; i < 2; i ++) {
-        // Fill with gradient
-        if (this.expWidth[i] > 100)
-            this.expWidth[i] = 100;
-        var diff = this.experience[i] - this.expWidth[i];
+        // Fill with gradient but not more than 100%
+        var diff = (this.experience[i] > 100 ? 100 : this.experience[i]) - this.expWidth[i];
         this.expWidth[i] += diff / 7;
+
+        // Keep animating!!
+        if (diff !== 0)
+            this.uiNeedsUpdate = true;
 
         var p2Width = expBarWidth * this.expWidth[i] / 100;
         context.fillStyle = grds[i];
@@ -595,24 +622,79 @@ InGame.prototype.drawReadyArrows = function() {
 var floatOffset = 0;
 
 InGame.prototype.draw = function(context) {
+    if (this.uiNeedsUpdate) {
+        this.uiNeedsUpdate = false;
 
-    if (this.juice.background && !this.gameDone) {
-        var x = gameSize.width / 2 - this.juice.background.width / 2;
-        var y = gameSize.height / 2 - this.juice.background.height / 2;
-        context.drawImage(this.juice.background, x, y, this.juice.background.width, this.juice.background.height);
+        this.uiContext.clearRect(0, 0, this.ui.width, this.ui.height);
 
-        context.fillStyle = "rgba(0, 0, 0, 0.7)";
-        context.fillRect(0, 0, gameSize.width, gameSize.height);
+        // Draw score
+        var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
+
+        context.fillStyle = "white";
+        context.font = "50px Poiret One";
+        var scoreWidth = context.measureText(scores).width;
+        context.fillText(scores, (gameSize.width / 2) - (scoreWidth / 2), 50);
+
+        // Draw experience bar
+        this.drawExperiences(this.uiContext);
     }
 
-    var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
+    // Draw the background first
+    if (!this.gameDone) {
+        var x = Math.floor(gameSize.width / 2 - this.juice.background.width / 2);
+        var y = Math.floor(gameSize.height / 2 - this.juice.background.height / 2);
 
-    context.fillStyle = "white";
-    context.font = "50px Poiret One";
-    var scoreWidth = context.measureText(scores).width;
-    context.fillText(scores, (gameSize.width / 2) - (scoreWidth / 2), 50);
+        // Redraw this
+        // context.clearRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
+        
+        context.drawImage(this.juice.background, x, y,
+            Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
 
-    if (!this.readyToStart) {
+        context.fillStyle = "rgba(0, 0, 0, 0.7)";
+        context.fillRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
+
+        // Draw shields
+        if (this.player1.hasPowerup(Shield)) {
+            context.fillStyle = this.leftShieldGrd;
+            context.fillRect(0, 0, 10, gameSize.height);
+        }
+        if (this.player2.hasPowerup(Shield)) {
+            context.fillStyle = this.rightShieldGrd;
+            context.fillRect(gameSize.width - 10, 0, 10, gameSize.height);
+        }
+    }
+
+    context.drawImage(this.ui, 0, 0, gameSize.width, gameSize.height);
+
+    // Game over. Spawn cards and make 'em bounce
+    if (this.gameDone) {
+        if (keyDown[KEYS.SPACE])
+            changeState(new TitleScreen());
+
+        if (this.cardFrame % 3 === 0) {
+            for (var l = 0; l < this.particles.length; l ++) {
+                this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
+            }
+            this.cardAlpha *= 0.99;
+
+        }
+
+        if (this.cardAlpha < 0.05) {
+            context.fillStyle = "rgba(0, 0, 0, 0.1)";
+            context.fillRect(0, 0, gameSize.width, gameSize.height);
+
+            if (this.particles.length > 0 && Math.random() < 0.3) {
+                this.particles.splice(0, 1);
+
+                if (this.particles.length === 0)
+                    setTimeout(function() {
+                        changeState(new TitleScreen());
+                    }, 1000);
+            }
+        }
+    }
+    // Ready screen. Draw arrows and fill 'em up.
+    else if (!this.readyToStart) {
         this.drawReadyArrows();
         this.player1.draw(context);
         this.player2.draw(context);
@@ -644,106 +726,53 @@ InGame.prototype.draw = function(context) {
         context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 450);
     }
     else {
-        if (!this.gameDone) {
-            if (this.portals) {
-                context.fillStyle = "blue";
-                context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
-                context.fillStyle = "orange";
-                context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
-            }
+        if (this.portals) {
+            context.fillStyle = "blue";
+            context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
+            context.fillStyle = "orange";
+            context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
+        }
 
-            this.drawPowerupArrows();
-            this.drawExperiences();
+        this.drawPowerupArrows();
 
-            this.player1.draw(context);
-            this.player2.draw(context);
+        this.player1.draw(context);
+        this.player2.draw(context);
 
-            var grd = context.createLinearGradient(0.000, 150.000, 10.000, 150.000);
-      
-            // Add colors
-            grd.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
-            grd.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
+        this.ball.draw(context);
 
-            // Fill with gradient
-            context.fillStyle = grd;
-            if (this.player1.hasPowerup(Shield)) {
-                context.fillRect(0, 0, 10, gameSize.height);
-            }
-
-            grd = context.createLinearGradient(gameSize.width - 10, 150.000, gameSize.width, 150.000);
-      
-            // Add colors
-            grd.addColorStop(0.000, 'rgba(0, 0, 0, 0.000)');
-            grd.addColorStop(1.000, 'rgba(86, 170, 255, 1.000)');
-
-            // Fill with gradient
-            context.fillStyle = grd;
-            if (this.player2.hasPowerup(Shield)) {
-                context.fillRect(gameSize.width - 10, 0, 10, gameSize.height);
-            }
-
-            this.ball.draw(context);
-
-            // Draw countdown
-            if (this.countdown > 200) {
-                if (this.countdown < 4000) {
-                    var seconds = Math.floor(this.countdown / 1000);
-                    if (this.numSoundsToPlay >= seconds) {
-                        this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
-                        this.numSoundsToPlay = this.numSoundsToPlay - 1;
-                    }
-
-                    var text;
-                    if (this.countdown > 1000)
-                        text = seconds.toString();
-                    else
-                        text = 'GO!';
-
-                    var timeToNext = (this.countdown % 1000) / 1000;
-                    var maxSize = 600;
-                    var fontSize = maxSize - maxSize * timeToNext;
-
-                    if (!this.juice.countdown)
-                        fontSize = 200;
-
-                    context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
-                    context.font = fontSize + "pt Arial Black";
-                    var textSize = context.measureText(text);
-                    context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
-                            (gameSize.height / 2) + fontSize / 2);
+        // Draw countdown
+        if (this.countdown > 200) {
+            if (this.countdown < 4000) {
+                var seconds = Math.floor(this.countdown / 1000);
+                if (this.numSoundsToPlay >= seconds) {
+                    this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
+                    this.numSoundsToPlay = this.numSoundsToPlay - 1;
                 }
-            }
 
-            // Draw powerupChoices!
-            for (var i = 0; i < this.powerupChoices.length; i ++) {
-                this.powerupChoices[i].draw(context, this.powerupChoice.player);
+                var text;
+                if (this.countdown > 1000)
+                    text = seconds.toString();
+                else
+                    text = 'GO!';
+
+                var timeToNext = (this.countdown % 1000) / 1000;
+                var maxSize = 600;
+                var fontSize = maxSize - maxSize * timeToNext;
+
+                if (!this.juice.countdown)
+                    fontSize = 200;
+
+                context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
+                context.font = fontSize + "pt Arial Black";
+                var textSize = context.measureText(text);
+                context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
+                        (gameSize.height / 2) + fontSize / 2);
             }
         }
-        else {
-            if (keyDown[KEYS.SPACE])
-                changeState(new TitleScreen());
 
-            if (this.cardFrame % 3 === 0) {
-                for (var l = 0; l < this.particles.length; l ++) {
-                    this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
-                }
-                this.cardAlpha *= 0.99;
-
-            }
-
-            if (this.cardAlpha < 0.05) {
-                context.fillStyle = "rgba(0, 0, 0, 0.1)";
-                context.fillRect(0, 0, gameSize.width, gameSize.height);
-
-                if (this.particles.length > 0 && Math.random() < 0.3) {
-                    this.particles.splice(0, 1);
-
-                    if (this.particles.length === 0)
-                        setTimeout(function() {
-                            changeState(new TitleScreen());
-                        }, 1000);
-                }
-            }        
+        // Draw powerupChoices!
+        for (var i = 0; i < this.powerupChoices.length; i ++) {
+            this.powerupChoices[i].draw(context, this.powerupChoice.player);
         }
     }
     

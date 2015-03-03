@@ -47,10 +47,13 @@ var KEYS = {
  * Main animation loop!  Check for intersection, update rectangle
  *  objects, and draw to screen.
  */
+var time = new Date().getTime();
 function update() {
     requestAnimFrame(update);
 
-    currentState.update();
+    var nextTime = new Date().getTime();
+    currentState.update((nextTime - time) / 25);
+    time = nextTime;
 
     if (!currentState.gameDone) {
         context.clearRect(0 , 0 , canvas.width, canvas.height);
@@ -79,8 +82,8 @@ function startGame() {
  */
 function getCanvasCoords(evt) {
     var canvasRect = canvas.getBoundingClientRect();
-    var mx = evt.x;// - canvasRect.left;
-    var my = evt.y;// - canvasRect.top;
+    var mx = evt.x || evt.clientX;// - canvasRect.left;
+    var my = evt.y || evt.clientY;// - canvasRect.top;
  
     // console.log({
     //     x: Math.floor(mx) * gameSize.width /  canvas.width, 

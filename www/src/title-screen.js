@@ -35,6 +35,20 @@ function TitleScreen() {
     this.clickedPlay = false;
     this.hue = 0;
 
+    // Reset key bindings
+    KEYS = {
+        LEFT: 37,
+        UP: 38,
+        RIGHT: 39,
+        DOWN: 40,
+        SPACE: 32,
+
+        W: 87,
+        A: 65,
+        S: 83,
+        D: 68,
+    };
+
     this.button = { 
         shape: new SAT.Box(new SAT.Vector(gameSize.width/2 - 100, gameSize.height/2 + 100 - 40 + 2), 200, 50).toPolygon(), 
         bounceTime: 0,
