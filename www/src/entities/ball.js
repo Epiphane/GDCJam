@@ -100,7 +100,7 @@ Ball.prototype.playRandomWall = function() {
     }
 }
 
-Ball.prototype.update = function(dt, game) {
+Ball.prototype.update = function(game) {
     // Movement and collision
     var flipY = function(off) {
         this.moveY(-2 * off);
@@ -116,8 +116,8 @@ Ball.prototype.update = function(dt, game) {
         this.bounce();
     }.bind(this);
 
-    this.moveX(dt * this.velocity.x);
-    this.moveY(dt * this.velocity.y);
+    this.moveX(this.velocity.x);
+    this.moveY(this.velocity.y);
 
     if (this.getX() + this.getSize() <= 0) {
         this.win = 2;
