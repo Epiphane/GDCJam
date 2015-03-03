@@ -11,13 +11,6 @@ function Paddle(x, y, width, height) {
     this.dy = 0;
     this.max_dy = 20;
 
-    if (x < gameSize.width / 2) {
-    	this.player = 1;
-    }
-    else {
-    	this.player = 2;
-    }
-
     this.juice = {
         color: false
     };
@@ -25,6 +18,7 @@ function Paddle(x, y, width, height) {
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
 
     this.angle = 0;
+    this.powerups = [];
 }
 
 Paddle.prototype.updateShape = function() {
@@ -126,9 +120,9 @@ Paddle.prototype.ballDist = function(ballX, ballY, approaching) {
     }
 };
 
-Paddle.prototype.update = function() {
+Paddle.prototype.update = function(dt) {
 	if (this.getY() + this.dy >= 0 && this.getY() + this.getHeight() + this.dy <= gameSize.height) {
-    	this.moveY(this.dy);
+    	this.moveY(dt * this.dy);
     	this.dy *= 0.6;
 	}
 	else {
