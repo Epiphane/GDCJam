@@ -12,7 +12,8 @@ function Paddle(x, y, width, height) {
     this.max_dy = 20;
 
     this.juice = {
-        color: false
+        color: false,
+        shape: false
     };
 
     this.shape = new SAT.Box(new SAT.Vector(x - width / 2, y - height / 2), width, height).toPolygon();
@@ -93,6 +94,9 @@ Paddle.prototype.accelerate = function(dy) {
 
 Paddle.prototype.hitBall = function() {
     this.bounceTime = 40;
+
+    if (this.juice.shake)
+        shakeScreen();
 
     for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
         this.powerups[ndx].action();

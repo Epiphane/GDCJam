@@ -113,6 +113,7 @@ InGame.prototype.setJuiceAndAdd = function() {
         case 1:
             this.expPerHit = 10;
             this.expPerWin = 40;
+            this.player1.juice.shake = true;
             this.ball.juice.sound = true;
         case 0:
             this.player1.juice.color = true;

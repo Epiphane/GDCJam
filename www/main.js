@@ -49,6 +49,11 @@ var KEYS = {
  * Main animation loop!  Check for intersection, update rectangle
  *  objects, and draw to screen.
  */
+var shakeTime = 0;
+function shakeScreen() {
+    shakeTime = 30;
+}
+
 var time = new Date().getTime();
 function update() {
     requestAnimFrame(update);
@@ -58,9 +63,14 @@ function update() {
     time = nextTime;
 
     if (!currentState.gameDone) {
-        context.clearRect(0 , 0 , canvas.width, canvas.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);
     }
     context.save();
+    if (shakeTime > 0) {
+        context.translate(Math.sin(shakeTime) * shakeTime / 5, 0);
+
+        shakeTime --;
+    }
     context.scale(canvas.width / gameSize.width, canvas.height / gameSize.height);
 
     currentState.draw(context);
