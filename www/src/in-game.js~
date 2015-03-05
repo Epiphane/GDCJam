@@ -38,7 +38,7 @@ function InGame() {
     this.readyDelay = 0;
     this.chosePowerupDelay = 0;
 
-    this.scoreToWin = 7;
+    this.scoreToWin = 1;
 
     this.juiceLevel = 0;
 
@@ -807,10 +807,10 @@ InGame.prototype.winSequence = function() {
 
         if (this.cardAlpha === 2) {
             if (this.gameDone === 1) {
-                this.particles.push(newParticle(this.player1.getX(), this.player1.getY(), 1));
+                this.particles.push(newParticle(this.player1.getX() + this.player1.width /  2, this.player1.getY(), 1));
             }
             else {
-                this.particles.push(newParticle(this.player2.getX(), this.player2.getY(), -1));
+                this.particles.push(newParticle(this.player2.getX() + this.player1.width /  2, this.player2.getY(), -1));
             }
         }
         else {
@@ -819,6 +819,7 @@ InGame.prototype.winSequence = function() {
     }
         
     for (var l = 0; l < this.particles.length; l ++) {
+        //this.particles[l].height = 96;
         this.particles[l].update(context);
     }
 };
