@@ -245,6 +245,7 @@ InGame.prototype.update = function(dt) {
 
     // ask players to get ready
     if (!this.readyToStart) {
+        this.lastTime = new Date();
         if (!this.p1Ready) {
             if (keyDown[KEYS.W] && this.p1ReadyHeight > -1) {
                 this.p1ReadyHeight += 2;

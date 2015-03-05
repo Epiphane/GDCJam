@@ -116,6 +116,7 @@ Ball.prototype.update = function(dt, game) {
         this.bounce();
     }.bind(this);
 
+    console.log(this.velocity);
     this.moveX(dt * this.velocity.x);
     this.moveY(dt * this.velocity.y);
 
@@ -285,8 +286,8 @@ Ball.prototype.draw = function(context) {
 
     // scale context horizontally
     context.translate(this.getX(), this.getY());
-    context.rotate(Math.atan(this.velocity.y / this.velocity.x));
-    context.scale(scale.x, scale.y);
+    // context.rotate(Math.atan(this.velocity.y / this.velocity.x));
+    // context.scale(scale.x, scale.y);
 
     context.beginPath();
     context.arc(0, 0, this.getSize(), 0, 2 * Math.PI, false);

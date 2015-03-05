@@ -1,4 +1,4 @@
-var aspectRatio = 4/3;
+var aspectRatio = 5/3;
 
 // Set up the canvas
 var canvas =  document.getElementById("game-canvas");
@@ -10,7 +10,9 @@ if (canvas.width / canvas.height > aspectRatio) { // Too wide
 else { // Too tall
     canvas.height = canvas.width / aspectRatio;
 }
-gameSize = { width: 1024, height: 768 };
+gameSize = { width: 1280, height: 768 };
+// canvas.width = gameSize.width;
+// canvas.height = gameSize.height;
 var context = canvas.getContext("2d");
 canvas.onselectstart = function() { return false; } // Fix weird cursor problems
 
@@ -59,7 +61,7 @@ function update() {
         context.clearRect(0 , 0 , canvas.width, canvas.height);
     }
     context.save();
-    context.scale(canvas.width / 1024, canvas.height / 768);
+    context.scale(canvas.width / gameSize.width, canvas.height / gameSize.height);
 
     currentState.draw(context);
     context.restore();
