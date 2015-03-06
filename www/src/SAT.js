@@ -1,10 +1,10 @@
-// Version 0.5.0 - Copyright 2012 - 2015 -  Jim Riecken <jimr@jimr.ca>
+// Version 0.5.0 - Copyright 2012 - 2015 -  Thomas Steinke <me@thomassteinke.com>
 //
-// Released under the MIT License - https://github.com/jriecken/sat-js
+// Released under the MIT License - https://github.com/Epiphane/sat-js
 //
 // A simple library for determining intersections of circles and
 // polygons using the Separating Axis Theorem.
-/** @preserve SAT.js - Version 0.5.0 - Copyright 2012 - 2015 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js */
+/** @preserve SAT.js - Version 0.5.0 - Copyright 2012 - 2015 - Thomas Steinke <me@thomassteinke.com> - released under the MIT License. https://github.com/Epiphane/sat-js */
 
 /*global define: false, module: false*/
 /*jshint shadow:true, sub:true, forin:true, noarg:true, noempty:true, 
@@ -58,36 +58,13 @@
   // Alias `Vector` as `V`
   SAT['V'] = Vector;
 
-
-  // Copy the values of another Vector into this one.
-  /**
-   * @param {Vector} other The other Vector.
-   * @return {Vector} This for chaining.
-   */
-  Vector.prototype['copy'] = Vector.prototype.copy = function(other) {
-    this['x'] = other['x'];
-    this['y'] = other['y'];
-    return this;
-  };
-
-  // Create a new vector with the same coordinates as this on.
-  /**
-   * @return {Vector} The new cloned vector
-   */
-  Vector.prototype['clone'] = Vector.prototype.clone = function() {
-    return new Vector(this['x'], this['y']);
-  };
-
   // Change this vector to be perpendicular to what it was before. (Effectively
   // roatates it 90 degrees in a clockwise direction)
   /**
    * @return {Vector} This for chaining.
    */
   Vector.prototype['perp'] = Vector.prototype.perp = function() {
-    var x = this['x'];
-    this['x'] = this['y'];
-    this['y'] = -x;
-    return this;
+    return new Vector(this['y'], -this['x']);
   };
 
   // Rotate this vector (counter-clockwise) by the specified angle (in radians).
@@ -96,11 +73,8 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['rotate'] = Vector.prototype.rotate = function (angle) {
-    var x = this['x'];
-    var y = this['y'];
-    this['x'] = x * Math.cos(angle) - y * Math.sin(angle);
-    this['y'] = x * Math.sin(angle) + y * Math.cos(angle);
-    return this;
+    return new Vector(this['x'] * Math.cos(angle) - this['y'] * Math.sin(angle),
+                      this['x'] * Math.sin(angle) + this['y'] * Math.cos(angle));
   };
 
   // Reverse this vector.
@@ -108,9 +82,7 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['reverse'] = Vector.prototype.reverse = function() {
-    this['x'] = -this['x'];
-    this['y'] = -this['y'];
-    return this;
+    return new Vector(-this['x'], -this['y']);
   };
   
 
@@ -121,8 +93,7 @@
   Vector.prototype['normalize'] = Vector.prototype.normalize = function() {
     var d = this.len();
     if(d > 0) {
-      this['x'] = this['x'] / d;
-      this['y'] = this['y'] / d;
+      return new Vector(this['x'] / d, this['y'] / d);
     }
     return this;
   };
@@ -133,9 +104,7 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['add'] = Vector.prototype.add = function(other) {
-    this['x'] += other['x'];
-    this['y'] += other['y'];
-    return this;
+    return new Vector(this['x'] + other['x'], this['y'] + other['y']);
   };
   
   // Subtract another vector from this one.
@@ -144,9 +113,7 @@
    * @return {Vector} This for chaiing.
    */
   Vector.prototype['sub'] = Vector.prototype.sub = function(other) {
-    this['x'] -= other['x'];
-    this['y'] -= other['y'];
-    return this;
+    return new Vector(this['x'] - other['x'], this['y'] - other['y']);
   };
   
   // Scale this vector. An independant scaling factor can be provided
@@ -158,9 +125,7 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['scale'] = Vector.prototype.scale = function(x,y) {
-    this['x'] *= x;
-    this['y'] *= y || x;
-    return this; 
+    return new Vector(this['x'] * x, this['y'] * (y || x));
   };
   
   // Project this vector on to another vector.
@@ -170,9 +135,7 @@
    */
   Vector.prototype['project'] = Vector.prototype.project = function(other) {
     var amt = this.dot(other) / other.len2();
-    this['x'] = amt * other['x'];
-    this['y'] = amt * other['y'];
-    return this;
+    return new Vector(amt * other['x'], amt * other['y']);
   };
   
   // Project this vector onto a vector of unit length. This is slightly more efficient
@@ -183,9 +146,7 @@
    */
   Vector.prototype['projectN'] = Vector.prototype.projectN = function(other) {
     var amt = this.dot(other);
-    this['x'] = amt * other['x'];
-    this['y'] = amt * other['y'];
-    return this;
+    return new Vector(amt * other['x'], amt * other['y']);
   };
   
   // Reflect this vector on an arbitrary axis.
@@ -194,12 +155,7 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['reflect'] = Vector.prototype.reflect = function(axis) {
-    var x = this['x'];
-    var y = this['y'];
-    this.project(axis).scale(2);
-    this['x'] -= x;
-    this['y'] -= y;
-    return this;
+    return this.project(axis).scale(2).sub(new Vector(this['x'], this['y']));
   };
   
   // Reflect this vector on an arbitrary axis (represented by a unit vector). This is
@@ -209,12 +165,7 @@
    * @return {Vector} This for chaining.
    */
   Vector.prototype['reflectN'] = Vector.prototype.reflectN = function(axis) {
-    var x = this['x'];
-    var y = this['y'];
-    this.projectN(axis).scale(2);
-    this['x'] -= x;
-    this['y'] -= y;
-    return this;
+    return this.projectN(axis).scale(2).sub(new Vector(this['x'], this['y']));
   };
   
   // Get the dot product of this vector and another.
@@ -241,7 +192,7 @@
   Vector.prototype['len'] = Vector.prototype.len = function() {
     return Math.sqrt(this.len2());
   };
-  
+
   // ## Circle
   //
   // Represents a circle with a position and a radius.
@@ -268,7 +219,7 @@
    */
   Circle.prototype['getAABB'] = Circle.prototype.getAABB = function() {
     var r = this['r'];
-    var corner = this["pos"].clone().sub(new Vector(r, r));
+    var corner = this["pos"].sub(new Vector(r, r));
     return new Box(corner, r*2, r*2).toPolygon();
   };
 
@@ -412,19 +363,19 @@
     var len = points.length;
     var i;
     for (i = 0; i < len; i++) {
-      var calcPoint = calcPoints[i].copy(points[i]);
+      var calcPoint = calcPoints[i] = points[i];
       calcPoint.x += offset.x;
       calcPoint.y += offset.y;
       if (angle !== 0) {
-        calcPoint.rotate(angle);
+        calcPoints[i] = calcPoint.rotate(angle);
       }
     }
     // Calculate the edges/normals
     for (i = 0; i < len; i++) {
       var p1 = calcPoints[i];
       var p2 = i < len - 1 ? calcPoints[i + 1] : calcPoints[0];
-      var e = edges[i].copy(p2).sub(p1);
-      normals[i].copy(e).perp().normalize();
+      var e = edges[i] = p2.sub(p1);
+      normals[i] = e.perp().normalize();
     }
     return this;
   };
@@ -459,7 +410,7 @@
         yMax = point["y"];
       }
     }
-    return new Box(this["pos"].clone().add(new Vector(xMin, yMin)), xMax - xMin, yMax - yMin).toPolygon();
+    return new Box(this["pos"].add(new Vector(xMin, yMin)), xMax - xMin, yMax - yMin).toPolygon();
   };
   
 
@@ -533,14 +484,6 @@
 
   // ## Object Pools
 
-  // A pool of `Vector` objects that are used in calculations to avoid
-  // allocating memory.
-  /**
-   * @type {Array.<Vector>}
-   */
-  var T_VECTORS = [];
-  for (var i = 0; i < 10; i++) { T_VECTORS.push(new Vector()); }
-  
   // A pool of arrays of numbers used in calculations to avoid allocating
   // memory.
   /**
@@ -605,7 +548,7 @@
     var rangeA = T_ARRAYS.pop();
     var rangeB = T_ARRAYS.pop();
     // The magnitude of the offset between the two polygons
-    var offsetV = T_VECTORS.pop().copy(bPos).sub(aPos);
+    var offsetV = bPos.sub(aPos);
     var projectedOffset = offsetV.dot(axis);
     // Project the polygons onto the axis.
     flattenPointsOn(aPoints, axis, rangeA);
@@ -615,7 +558,6 @@
     rangeB[1] += projectedOffset;
     // Check if there is a gap. If there is, this is a separating axis and we can stop
     if (rangeA[0] > rangeB[1] || rangeB[0] > rangeA[1]) {
-      T_VECTORS.push(offsetV); 
       T_ARRAYS.push(rangeA); 
       T_ARRAYS.push(rangeB);
       return true;
@@ -654,13 +596,12 @@
       var absOverlap = Math.abs(overlap);
       if (absOverlap < response['overlap']) {
         response['overlap'] = absOverlap;
-        response['overlapN'].copy(axis);
+        response['overlapN'] = axis;
         if (overlap < 0) {
           response['overlapN'].reverse();
         }
       }      
     }
-    T_VECTORS.push(offsetV); 
     T_ARRAYS.push(rangeA); 
     T_ARRAYS.push(rangeB);
     return false;
@@ -714,10 +655,9 @@
    * @return {boolean} true if the point is inside the circle, false if it is not.
    */
   function pointInCircle(p, c) {
-    var differenceV = T_VECTORS.pop().copy(p).sub(c['pos']);
+    var differenceV = p.sub(c['pos']);
     var radiusSq = c['r'] * c['r'];
     var distanceSq = differenceV.len2();
-    T_VECTORS.push(differenceV);
     // If the distance between is smaller than the radius then the point is inside the circle.
     return distanceSq <= radiusSq;
   }
@@ -730,7 +670,7 @@
    * @return {boolean} true if the point is inside the polygon, false if it is not.
    */
   function pointInPolygon(p, poly) {
-    UNIT_SQUARE['pos'].copy(p);
+    UNIT_SQUARE['pos'] = p;
     T_RESPONSE.clear();
     var result = testPolygonPolygon(UNIT_SQUARE, poly, T_RESPONSE);
     if (result) {
@@ -751,13 +691,12 @@
   function testCircleCircle(a, b, response) {
     // Check if the distance between the centers of the two
     // circles is greater than their combined radius.
-    var differenceV = T_VECTORS.pop().copy(b['pos']).sub(a['pos']);
+    var differenceV = b['pos'].sub(a['pos']);
     var totalRadius = a['r'] + b['r'];
     var totalRadiusSq = totalRadius * totalRadius;
     var distanceSq = differenceV.len2();
     // If the distance is bigger than the combined radius, they don't intersect.
     if (distanceSq > totalRadiusSq) {
-      T_VECTORS.push(differenceV);
       return false;
     }
     // They intersect.  If we're calculating a response, calculate the overlap.
@@ -766,12 +705,11 @@
       response['a'] = a;
       response['b'] = b;
       response['overlap'] = totalRadius - dist;
-      response['overlapN'].copy(differenceV.normalize());
-      response['overlapV'].copy(differenceV).scale(response['overlap']);
+      response['overlapN'] = differenceV.normalize();
+      response['overlapV'] = response['overlapN'].scale(response['overlap']);
       response['aInB']= a['r'] <= b['r'] && dist <= b['r'] - a['r'];
       response['bInA'] = b['r'] <= a['r'] && dist <= a['r'] - b['r'];
     }
-    T_VECTORS.push(differenceV);
     return true;
   }
   SAT['testCircleCircle'] = testCircleCircle;
@@ -786,13 +724,12 @@
    */
   function testPolygonCircle(polygon, circle, response) {
     // Get the position of the circle relative to the polygon.
-    var circlePos = T_VECTORS.pop().copy(circle['pos']).sub(polygon['pos']);
+    var circlePos = circle['pos'].sub(polygon['pos']);
     var radius = circle['r'];
     var radius2 = radius * radius;
     var points = polygon['calcPoints'];
     var len = points.length;
-    var edge = T_VECTORS.pop();
-    var point = T_VECTORS.pop();
+    var edge, point;
     
     // For each edge in the polygon:
     for (var i = 0; i < len; i++) {
@@ -802,9 +739,9 @@
       var overlapN = null;
       
       // Get the edge.
-      edge.copy(polygon['edges'][i]);
+      edge = polygon['edges'][i];
       // Calculate the center of the circle relative to the starting point of the edge.
-      point.copy(circlePos).sub(points[i]);
+      point = circlePos.sub(points[i]);
       
       // If the distance between the center of the circle and the point
       // is bigger than the radius, the polygon is definitely not fully in
@@ -818,19 +755,15 @@
       // If it's the left region:
       if (region === LEFT_VORNOI_REGION) { 
         // We need to make sure we're in the RIGHT_VORNOI_REGION of the previous edge.
-        edge.copy(polygon['edges'][prev]);
+        edge = polygon['edges'][prev];
         // Calculate the center of the circle relative the starting point of the previous edge
-        var point2 = T_VECTORS.pop().copy(circlePos).sub(points[prev]);
+        var point2 = circlePos.sub(points[prev]);
         region = vornoiRegion(edge, point2);
         if (region === RIGHT_VORNOI_REGION) {
           // It's in the region we want.  Check if the circle intersects the point.
           var dist = point.len();
           if (dist > radius) {
             // No intersection
-            T_VECTORS.push(circlePos); 
-            T_VECTORS.push(edge);
-            T_VECTORS.push(point); 
-            T_VECTORS.push(point2);
             return false;
           } else if (response) {
             // It intersects, calculate the overlap.
@@ -839,22 +772,18 @@
             overlap = radius - dist;
           }
         }
-        T_VECTORS.push(point2);
       // If it's the right region:
       } else if (region === RIGHT_VORNOI_REGION) {
         // We need to make sure we're in the left region on the next edge
-        edge.copy(polygon['edges'][next]);
+        edge = polygon['edges'][next];
         // Calculate the center of the circle relative to the starting point of the next edge.
-        point.copy(circlePos).sub(points[next]);
+        point = circlePos.sub(points[next]);
         region = vornoiRegion(edge, point);
         if (region === LEFT_VORNOI_REGION) {
           // It's in the region we want.  Check if the circle intersects the point.
           var dist = point.len();
           if (dist > radius) {
             // No intersection
-            T_VECTORS.push(circlePos); 
-            T_VECTORS.push(edge); 
-            T_VECTORS.push(point);
             return false;              
           } else if (response) {
             // It intersects, calculate the overlap.
@@ -875,9 +804,6 @@
         // If the circle is on the outside of the edge, there is no intersection.
         if (dist > 0 && distAbs > radius) {
           // No intersection
-          T_VECTORS.push(circlePos); 
-          T_VECTORS.push(normal); 
-          T_VECTORS.push(point);
           return false;
         } else if (response) {
           // It intersects, calculate the overlap.
@@ -895,7 +821,7 @@
       // (overlapN may be null if the circle was in the wrong Vornoi region).
       if (overlapN && response && Math.abs(overlap) < Math.abs(response['overlap'])) {
         response['overlap'] = overlap;
-        response['overlapN'].copy(overlapN);
+        response['overlapN'] = overlapN;
       }
     }
     
@@ -903,11 +829,8 @@
     if (response) {
       response['a'] = polygon;
       response['b'] = circle;
-      response['overlapV'].copy(response['overlapN']).scale(response['overlap']);
+      response['overlapV'] = response['overlapN'].scale(response['overlap']);
     }
-    T_VECTORS.push(circlePos); 
-    T_VECTORS.push(edge); 
-    T_VECTORS.push(point);
     return true;
   }
   SAT['testPolygonCircle'] = testPolygonCircle;
@@ -972,7 +895,7 @@
     if (response) {
       response['a'] = a;
       response['b'] = b;
-      response['overlapV'].copy(response['overlapN']).scale(response['overlap']);
+      response['overlapV'] = response['overlapN'].scale(response['overlap']);
     }
     return true;
   }
