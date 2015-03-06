@@ -38,7 +38,7 @@ function InGame() {
     this.readyDelay = 0;
     this.chosePowerupDelay = 0;
 
-    this.scoreToWin = 1;
+    this.scoreToWin = 7;
 
     this.juiceLevel = 0;
 
