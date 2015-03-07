@@ -9,8 +9,7 @@
     <meta name="screen-orientation" content="portrait"/>
     <meta name="x5-fullscreen" content="true"/>
     <meta name="360-fullscreen" content="true"/>
-
-    <link href='http://fonts.googleapis.com/css?family=Poiret+One' rel='stylesheet' type='text/css'>
+    
     <style>
         /* following code make sure user won't see selection in the app */
         body, canvas, div {
@@ -30,6 +29,7 @@
         }
         canvas {
             background: #000;
+            display: block;
         }
     </style>
 </head>
@@ -37,18 +37,40 @@
 
 <!-- Main stage for rendering game scenes -->
 <canvas id="game-canvas" width="500" height="500" moz-opaque></canvas>
+<script type="text/javascript">
+  WebFontConfig = {
+    google: { families: [ 'Poiret+One::latin' ] }
+  };
+  (function() {
+    var wf = document.createElement('script');
+    wf.src = ('https:' == document.location.protocol ? 'https' : 'http') +
+      '://ajax.googleapis.com/ajax/libs/webfont/1/webfont.js';
+    wf.type = 'text/javascript';
+    wf.async = 'true';
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(wf, s);
+  })(); </script>
+
 <script src="src/SAT.js"></script>
 <script src="lib/buzz.js"></script>
 <script src="sound.js"></script>
 <script src="src/requestAnimationFrame.js"></script>
 <script src="src/entities/particle.js"></script>
 <script src="src/entities/powerup-option.js"></script>
-<script src="src/entities/paddle.js"></script>
+<script src="src/entities/player.js"></script>
 <script src="src/entities/ball-trail.js"></script>
 <script src="src/entities/ball.js"></script>
 <script src="src/powerup.js"></script>
 <script src="src/title-screen.js"></script>
+<script src="src/gameover-screen.js"></script>
+<script src="src/ready-screen.js"></script>
+<script src="src/powerup-screen.js"></script>
 <script src="src/in-game.js"></script>
+
+<script src="src/arrow.js"></script>
+
+<script src="src/anim.js"></script>
+<script src="src/input.js"></script>
 <script src="main.js"></script>
 <script src="http://elliotfiske.com/bonald.js"></script>
 <div style="display: none">Icons made by <a href="http://www.flaticon.com/authors/tutsplus" title="TutsPlus">TutsPlus</a>, <a href="http://www.flaticon.com/authors/icomoon" title="Icomoon">Icomoon</a>, <a href="http://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>             is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0">CC BY 3.0</a></div>

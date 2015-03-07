@@ -3,19 +3,21 @@
  *  where an intersection happens.
  */
 function Ball(x, y, radius, speed) {
+    var BALL_SIZE = 20;
+
     var direction = Math.random() > 0.5;
     var widthOfAngle = Math.PI / 2;
     var angle = Math.random() * widthOfAngle - widthOfAngle / 2;
 
     this.win = 0;
-    this.shape = new SAT.Circle(new SAT.Vector(x, y), radius);
+    this.shape = new SAT.Circle(new SAT.Vector(x, y), radius || BALL_SIZE);
 
-    this.velocity = {
-        x: speed * Math.cos(angle) * (direction ? 1 : -1),
-        y: speed * Math.sin(angle),
-    }
     this.speedMult = 1;
     this.baseSpeed = speed;
+    this.velocity = {
+        x: this.baseSpeed * Math.cos(angle) * (direction ? 1 : -1),
+        y: this.baseSpeed * Math.sin(angle),
+    };
 
     this.bounceTime = 0;
     this.bounceDuration = 10;
@@ -27,7 +29,7 @@ function Ball(x, y, radius, speed) {
         color: false,
         trail: false,
         bounce: false,
-        speedup: false,
+        speedup: true,
         sound: false
     };
 
@@ -60,8 +62,8 @@ Ball.prototype.normalizeVelocity = function() {
     var currentSpeed = Math.sqrt(this.velocity.x * this.velocity.x + 
                                  this.velocity.y * this.velocity.y);
 
-    this.velocity.x *= this.speedMult * this.baseSpeed / currentSpeed;
-    this.velocity.y *= this.speedMult * this.baseSpeed / currentSpeed;
+    this.velocity.x *= this.baseSpeed / currentSpeed;
+    this.velocity.y *= this.baseSpeed / currentSpeed;
 };
 
 Ball.prototype.playRandomBounce = function() {
@@ -100,50 +102,49 @@ Ball.prototype.playRandomWall = function() {
     }
 }
 
+Ball.prototype.flipX = function(off) {
+    this.moveX(-2 * off);
+    this.velocity.x *= -1;
+
+    this.bounce();
+};
+
+Ball.prototype.flipY = function(off) {
+    this.moveY(-2 * off);
+    this.velocity.y *= -1;
+
+    this.bounce();
+};
+
 Ball.prototype.update = function(dt, game) {
     // Movement and collision
-    var flipY = function(off) {
-        this.moveY(-2 * off);
-        this.velocity.y *= -1;
-
-        this.bounce();
-    }.bind(this);
-
-    var flipX = function(off) {
-        this.moveX(-2 * off);
-        this.velocity.x *= -1;
-
-        this.bounce();
-    }.bind(this);
-
-    console.log(this.velocity);
-    this.moveX(dt * this.velocity.x);
-    this.moveY(dt * this.velocity.y);
+    this.moveX(dt * this.speedMult * this.velocity.x);
+    this.moveY(dt * this.speedMult * this.velocity.y);
 
     if (this.getX() + this.getSize() <= 0) {
         this.win = 2;
     }
-    else if (this.getX() - this.getSize() >= gameSize.width) {
+    else if (this.getX() - this.getSize() >= GAME_WIDTH) {
         this.win = 1;
     }
 
     if (!this.win) {
         if (this.getY() - this.getSize() <= 0) {
-            flipY(this.getY() - this.getSize());
+            this.flipY(this.getY() - this.getSize());
             this.playRandomWall();
         }
-        else if (this.getY() + this.getSize() >= gameSize.height) {
-            flipY(this.getY() + this.getSize() - gameSize.height);
+        else if (this.getY() + this.getSize() >= GAME_HEIGHT) {
+            this.flipY(this.getY() + this.getSize() - GAME_HEIGHT);
             this.playRandomWall();
         }
-        else if (this.getX() + this.getSize() >= gameSize.width && game.player2.hasPowerup(Shield)) {
-            flipX(this.getX() + this.getSize() - gameSize.width);
-            game.player2.removePowerup(Shield);
+        else if (this.getX() + this.getSize() >= GAME_WIDTH && game.players[1].hasPowerup(Shield)) {
+            this.flipX(this.getX() + this.getSize() - GAME_WIDTH);
+            game.players[1].removePowerup(Shield);
             this.playRandomWall();
         }
-        else if (this.getX() - this.getSize() <= 0 && game.player1.hasPowerup(Shield)) {
-            flipX(this.getX() - this.getSize());
-            game.player1.removePowerup(Shield);
+        else if (this.getX() - this.getSize() <= 0 && game.players[0].hasPowerup(Shield)) {
+            this.flipX(this.getX() - this.getSize());
+            game.players[0].removePowerup(Shield);
             this.playRandomWall();
         }
 
@@ -153,26 +154,26 @@ Ball.prototype.update = function(dt, game) {
             if (SAT.testPolygonCircle(game.shape1, this.shape, collision) ||
                 SAT.testPolygonCircle(game.shape2, this.shape, collision)) {
                 // Portal 1 (From the Left)
-                if (this.velocity.x > 0 && this.getX() < gameSize.width / 2) {
+                if (this.velocity.x > 0 && this.getX() < GAME_WIDTH / 2) {
                     //console.log("case 1");
                     this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
                     this.shape.pos.y = game.portal2.y + 50;
                 }
                 // Portal 2 (From the Right)
-                else if (this.velocity.x < 0 && this.getX() > gameSize.width / 2) {
+                else if (this.velocity.x < 0 && this.getX() > GAME_WIDTH / 2) {
                     //console.log("case 2");
                     this.shape.pos.x = game.portal1.x - this.getSize() - 5;
                     this.shape.pos.y = game.portal1.y + 50;
                 }
                 // Portal 1 (From the Right)
-                else if (this.velocity.x < 0 && this.getX() < gameSize.width / 2) {
+                else if (this.velocity.x < 0 && this.getX() < GAME_WIDTH / 2) {
                     //console.log("case 3:" + this.velocity.x);
                     this.shape.pos.x = game.portal2.x + game.portal2.width + this.getSize() + 5;
                     this.shape.pos.y = game.portal2.y + 50;        
                     this.velocity.x *= -1;    
                 }
                 // Portal 2 (From the Left)
-                else if (this.velocity.x > 0 && this.getX() > gameSize.width / 2) {
+                else if (this.velocity.x > 0 && this.getX() > GAME_WIDTH / 2) {
                     //console.log("case 4: " + this.velocity.x);
                     this.shape.pos.x = game.portal1.x - this.getSize() - 5;
                     this.shape.pos.y = game.portal1.y + 50;        
@@ -184,53 +185,33 @@ Ball.prototype.update = function(dt, game) {
         // Check for paddle collisions
         collision = new SAT.Response();
         // Player 1
-        if (SAT.testPolygonCircle(game.player1.shape, this.shape, collision)) {
-            if (collision.overlapV.x) {
-                this.velocity.x *= -1;
-                this.moveX(collision.overlapV.x);
+        for(var p = 0; p <= 1; p ++) {
+            if (SAT.testPolygonCircle(game.players[p].shape, this.shape, collision)) {
+                if (collision.overlapV.x) {
+                    this.velocity.x *= -1;
+                    this.moveX(collision.overlapV.x);
+                }
+                else {
+                    this.velocity.y *= -1;
+                    this.moveY(collision.overlapV.y);
+                }
+
+                this.bounce();
+
+                var dy = this.getY() - (game.players[p].getY() + game.players[p].getHeight() / 2);
+                console.log(dy / game.players[p].getHeight());
+                this.velocity.y = this.baseSpeed * dy / game.players[p].getHeight();
+                this.normalizeVelocity();
+
+                game.players[p].hitBall();
+                game.giveExperience(p);
+
+                this.playRandomBounce();
             }
-            else {
-                this.velocity.y *= -1;
-                this.moveY(collision.overlapV.y);
-            }
-
-            this.bounce();
-
-            var dy = this.getY() - (game.player1.getY() + game.player1.getHeight() / 2);
-            this.velocity.y = 16 * dy / game.player1.getHeight();
-            this.normalizeVelocity();
-
-            game.player1.hitBall();
-            game.giveExperience(0);
-
-            this.playRandomBounce();
         }
 
-        // Player 2
-        if (SAT.testPolygonCircle(game.player2.shape, this.shape, collision)) {
-            if (collision.overlapV.x) {
-                this.velocity.x *= -1;
-                this.moveX(collision.overlapV.x);
-            }
-            else {
-                this.velocity.y *= -1;
-                this.moveY(collision.overlapV.y);
-            }
-
-            this.bounce();
-
-            var dy = this.getY() - (game.player2.getY() + game.player2.getHeight() / 2);
-            this.velocity.y = 16 * dy / game.player2.getHeight();
-            this.normalizeVelocity();
-
-            game.player2.hitBall();
-            game.giveExperience(1);
-            
-            this.playRandomBounce();
-        }
-
-        game.player1.ballDist(this.getX(), this.getY(), this.velocity.x < 0);
-        game.player2.ballDist(this.getX(), this.getY(), this.velocity.x > 0);
+        game.players[0].ballDist(this.getX(), this.getY(), this.velocity.x < 0);
+        game.players[1].ballDist(this.getX(), this.getY(), this.velocity.x > 0);
 
         var speed = Math.ceil(Math.sqrt(Math.pow(this.velocity.x, 2) + Math.pow(this.velocity.y, 2)));
         //console.log(speed);

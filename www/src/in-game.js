@@ -1,75 +1,64 @@
 function InGame() {
     // Initial variables
-    this.speed = 10;
-    this.p1Score = 0;
-    this.p2Score = 0;
+    this.speed = 350;
+    this.UI_PADDING = 50;
+    this.SCORE_TO_WIN = 5;
 
     var initialSize = { w: 20, h: 140 };
-    this.ballSize = 20;
 
     this.portals = false;
     this.portal1 = {x: 0, y: 0, width: 0};
     this.portal2 = {x: 0, y: 0, width: 0};
-
     this.shape1 = null;
     this.shape2 = null;
-    // Time you must hold a key to confirm your powerup
-    this.timeToGetPowerup = 100;
-    this.timeToGetReady = 100;
 
     this.expPerHit = 25;
     this.expPerWin = 50;
-    this.experience = [0, 0];
+    this.experience = [90, 90];
+    this.score = [0, 0];
     this.expWidth = [0, 0];
-    this.powerups = [[], []];
-    this.particles = [];
 
     this.gameDone = 0;
     this.highscore = 0;
 
-    this.cardFrame = 0;
-    this.cardAlpha = 2;
-
-    this.p1ReadyHeight = 0;
-    this.p2ReadyHeight = 0;
-    this.p1Ready = false;
-    this.p2Ready = false;
-    this.readyToStart = false;
-    this.readyDelay = 0;
-    this.chosePowerupDelay = 0;
-
-    this.scoreToWin = 7;
-
     this.juiceLevel = 0;
+    this.juice = {};
 
     this.background = new Image();
-    this.background.src = "http://placekitten.com/g/1024/768";
+    // this.background.src = "http://placekitten.com/g/1024/768";
+    this.background.src = "./asset/juice.png";
 
-    this.player1 = new Paddle(0, 0, initialSize.w, initialSize.h);
-    this.player1.player = 1;
-    this.player2 = new Paddle(0, 0, initialSize.w, initialSize.h);
-    this.player2.player = 2;
-    this.ball = new Ball(0, 0, this.ballSize, this.speed);
+    this.players = [new Player(0), new Player(1)];
+
+    var distFromEdge = 30;
+    this.players[0].setX(distFromEdge);
+    this.players[1].setX(GAME_WIDTH - distFromEdge - this.players[1].getWidth());
+    this.players[0].setY(GAME_HEIGHT / 2 - this.players[0].getHeight() / 2);
+    this.players[1].setY(GAME_HEIGHT / 2 - this.players[1].getHeight() / 2);
+    this.ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, null, this.speed);
 
     // Draw UI offscreen so that text isn't rerendered every frame
-    this.ui = document.createElement('canvas');
-    this.ui.width = gameSize.width;
-    this.ui.height = gameSize.height;
-    this.uiContext = this.ui.getContext('2d');
+    this.scoreLabels = [
+        renderText('0', '34pt Poiret One', 'white'),
+        renderText('0', '34pt Poiret One', 'white')
+    ];
 
-    this.uiNeedsUpdate = true;
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    this.grds = {
+        exp: context.createLinearGradient(0.000, 150.000, GAME_WIDTH / 2 - 100, 150.000),
+        shield: context.createLinearGradient(0.000, 150.000, 10.000, 150.000)
+    };
 
-    this.leftShieldGrd = context.createLinearGradient(0.000, 150.000, 10.000, 150.000);
+    // Create EXP bar
+    this.grds.exp.addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
+    this.grds.exp.addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
+    this.grds.exp.addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
+    this.grds.exp.addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
 
-    // Add colors
-    this.leftShieldGrd.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
-    this.leftShieldGrd.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
-
-    this.rightShieldGrd = context.createLinearGradient(gameSize.width - 10, 150.000, gameSize.width, 150.000);
-
-    // Add colors
-    this.rightShieldGrd.addColorStop(0.000, 'rgba(0, 0, 0, 0.000)');
-    this.rightShieldGrd.addColorStop(1.000, 'rgba(86, 170, 255, 1.000)');
+    // Create shield
+    this.grds.shield.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
+    this.grds.shield.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
 }
 
 InGame.prototype.setJuiceAndAdd = function() {
@@ -81,13 +70,12 @@ InGame.prototype.setJuiceAndAdd = function() {
         sound: false
     };
 
-    this.player1.juice = this.player2.juice = {
+    this.players[0].juice = this.players[1].juice = {
         color: false,
         bounce: false
     };
 
     this.juice = {
-        background: juice,
         expBarColor: false,
         countdown: false
     };
@@ -108,16 +96,16 @@ InGame.prototype.setJuiceAndAdd = function() {
             this.juice.expBarColor = true;
         case 2:
             this.ball.juice.trail = true;
-            this.player1.juice.bounce = true;
-            this.player2.juice.bounce = true;
-            this.player1.juice.shake = true;
+            this.players[0].juice.bounce = true;
+            this.players[1].juice.bounce = true;
         case 1:
             this.expPerHit = 10;
             this.expPerWin = 40;
-            this.player1.juice.color = true;
-            this.player2.juice.color = true;
+            this.players[0].juice.shake = true;
             this.ball.juice.sound = true;
         case 0:
+            this.players[0].juice.color = true;
+            this.players[1].juice.color = true;
             this.ball.juice.bounce = true;
             break;
         default:
@@ -125,13 +113,13 @@ InGame.prototype.setJuiceAndAdd = function() {
             this.juice.countdown = true;
             this.juice.expBarColor = true;
             this.ball.juice.trail = true;
-            this.player1.juice.bounce = true;
-            this.player2.juice.bounce = true;
+            this.players[0].juice.bounce = true;
+            this.players[1].juice.bounce = true;
             this.expPerHit = 10;
             this.expPerWin = 40;
             this.ball.juice.sound = true;
-            this.player1.juice.color = true;
-            this.player2.juice.color = true;
+            this.players[0].juice.color = true;
+            this.players[1].juice.color = true;
             this.ball.juice.bounce = true;
     }
 
@@ -142,68 +130,26 @@ InGame.prototype.init = function() {
     var distFromEdge = 20;
 
     // "Entities"
-    this.player1.setX(distFromEdge);
-    this.player2.setX(gameSize.width - distFromEdge - this.player2.getWidth());
-    this.player1.setY(gameSize.height / 2 - this.player1.getHeight() / 2);
-    this.player2.setY(gameSize.height / 2 - this.player2.getHeight() / 2);
-    this.ball = new Ball(gameSize.width / 2 - this.ballSize / 2,
-            gameSize.height / 2 - this.ballSize / 2,
-            this.ballSize, this.speed);
+    this.players[0].setX(distFromEdge);
+    this.players[1].setX(GAME_WIDTH - distFromEdge - this.players[1].getWidth());
+    this.players[0].setY(GAME_HEIGHT / 2 - this.players[0].getHeight() / 2);
+    this.players[1].setY(GAME_HEIGHT / 2 - this.players[1].getHeight() / 2);
+    this.ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, null, this.speed);
 
-    this.powerupChoices = [];
-    this.powerupChoice = {
-        player: -1,
-        choice: 0,
-    };
-
-    this.powerupChoiceHeight = 0; // Goes UP when the user holds W/Up until it reaches the timeToGetPowerup
-    // If you hold down this thing goes NEGATIVE yo
-
-    this.pause = true;
-    this.countdown = 4000;
+    this.countdown = 1000;
     this.numSoundsToPlay = 3;
-    this.lastTime = new Date();
 
-    this.particles = [];
-    this.gameDone = 0;
-    this.highscore = 0;
-    this.cardFrame = 0;
-    this.cardAlpha = 2;
-
-    this.fadeArrows = [];
     this.setJuiceAndAdd();
 };
 
-var frigginChosePow = 0;
 InGame.prototype.giveExperience = function(player, exp) {
     this.experience[player] += (exp || this.expPerHit);
 
     if (this.experience[player] >= 100) {
-        this.pause = true;
+        this.game.setState(new PowerupScreen(this, player));
 
-        this.powerupChoice.player = player;
-        this.powerupChoice.time = this.powerupChoice.choice = 0;
-        var opt1 = new PowerupOption(player, 0, Powerup.getRandomPowerup(this, player + 1));
-        this.powerupChoices.push(opt1);
-        this.powerupChoices.push(new PowerupOption(player, 1, Powerup.getRandomPowerup(this, player + 1)), opt1);
+        this.experience[player] -= 100;
     }
-};
-
-InGame.prototype.selectPowerup = function(PowerupCstr) {
-    // Reset powerup stuff
-    
-    if (this.powerupChoice.player === 0) {
-        frigginChosePow = (frigginChosePow == 1) ? 0 : 1;
-    }
-    var powerY = (frigginChosePow == 1) ? gameSize.height - 80 - 42 : 80+60  ;
-    console.log("chose: " +frigginChosePow);
-
-    if (this.powerupChoice.player === 0)
-        this.player1.addPowerup(new PowerupCstr(this, this.player1), ARROW_MARGIN - 24, powerY);
-    else
-        this.player2.addPowerup(new PowerupCstr(this, this.player2), gameSize.width - ARROW_MARGIN - 24, powerY);
-
-    this.chosePowerupDelay = 50;
 };
 
 /**
@@ -211,615 +157,164 @@ InGame.prototype.selectPowerup = function(PowerupCstr) {
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function(dt) {
-    // Fade the effect arrows if necessary
-    for (var ndx = this.fadeArrows.length - 1; ndx >= 0; ndx--) {
-        if (this.fadeArrows[ndx].scale < 0) {
-            this.fadeArrows[ndx].scale -= 0.05;
-        }
-        else {
-            this.fadeArrows[ndx].scale += 0.05;
-        }
-        this.fadeArrows[ndx].alpha -= 0.03;
-        if (this.fadeArrows[ndx].alpha < 0) {
-            this.fadeArrows.splice(ndx, 1);
-        }
-    }
+    if (this.countdown) {
+        this.countdown -= Math.floor(dt * 1000);
 
-    if (this.readyDelay != 0) {
-        this.readyDelay--;
-        if (this.readyDelay == 0) {
-            this.readyToStart = true;
-            this.countdown = 4000;
-            this.pause = true;
-        }
-    }
-
-    if (this.chosePowerupDelay != 0) {
-        this.chosePowerupDelay--;
-        if (this.chosePowerupDelay == 0) {
-            this.experience[this.powerupChoice.player] = 0;
-            this.powerupChoices = [];
-            this.powerupChoiceHeight = 0;
+        if (this.countdown <= 0) {
+            this.countdown = 0;
             this.pause = false;
         }
     }
-
-    // ask players to get ready
-    if (!this.readyToStart) {
-        this.lastTime = new Date();
-        if (!this.p1Ready) {
-            if (keyDown[KEYS.W] && this.p1ReadyHeight > -1) {
-                this.p1ReadyHeight += 2;
-                chooseDOWN.stop();
-                chooseDOWNREV.stop();
-                chooseUPREV.stop();
-                chooseUP.play();
-            }
-            else {
-                this.p1ReadyHeight *= 0.8;
-                if (chooseUP.getPercent() > 0) {
-                    chooseUPREV.play();
-                    chooseUPREV.setPercent(120 - chooseUP.getPercent());
-                }
-
-                if (chooseDOWN.getPercent() > 0) {
-                    chooseDOWNREV.play();
-                    chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
-                }
-
-                chooseUP.stop();
-                chooseDOWN.stop();
-            }
-
-            if (this.p1ReadyHeight > this.timeToGetReady) {
-                this.p1Ready = true;
-                readySound.play();
-                chooseUP.stop();
-                this.createFadeArrow(ARROW_MARGIN, 80, 1);
-                if (this.p2Ready) {
-                    this.readyDelay = 50;
-                }
-            }
-        }
-
-        if (!this.p2Ready) {
-            if (keyDown[KEYS.UP] && this.p2ReadyHeight > -1) {
-                this.p2ReadyHeight += 2;
-                chooseDOWN2.stop();
-                chooseDOWNREV2.stop();
-                chooseUPREV2.stop();
-                chooseUP2.play();
-            }
-            else {
-                this.p2ReadyHeight *= 0.8;
-                if (chooseUP2.getPercent() > 0) {
-                    chooseUPREV2.play();
-                    chooseUPREV2.setPercent(120 - chooseUP2.getPercent());
-                }
-
-                if (chooseDOWN2.getPercent() > 0) {
-                    chooseDOWNREV2.play();
-                    chooseDOWNREV2.setPercent(120 - chooseDOWN2.getPercent());
-                }
-
-                chooseUP2.stop();
-                chooseDOWN2.stop();
-            }
-
-            if (this.p2ReadyHeight > this.timeToGetReady) {
-                this.p2Ready = true;
-                readySound2.play();
-                chooseUP2.stop();
-                this.createFadeArrow(gameSize.width - ARROW_MARGIN, 80, 1);
-                if (this.p1Ready) {
-                    this.readyDelay = 50;
-                }
-            }
-        }
-
-    }
     else {
+        this.players[0].update(dt);
+        this.players[1].update(dt);
+        this.ball.update(dt, this);
 
+        if (this.ball.win) {
+            if (this.ball.win === 1) {
+                this.score[0]++;
 
-        if (this.powerupChoices.length > 0) {
-            var upKey, downKey, leftKey, rightKey;
-            if (this.powerupChoice.player === 0) {
-                upKey = KEYS.W;
-                downKey = KEYS.S;
-            }
-            else {
-                upKey = KEYS.UP;
-                downKey = KEYS.DOWN;
-            }
-
-            if (keyDown[upKey] && this.powerupChoiceHeight > -1 && this.chosePowerupDelay == 0) {
-                this.powerupChoiceHeight += 2;
-                chooseDOWN.stop();
-                chooseDOWNREV.stop();
-                chooseUPREV.stop();
-                chooseUP.play();
-            }
-            else if (keyDown[downKey] && this.powerupChoiceHeight < 1 && this.chosePowerupDelay == 0) {
-                this.powerupChoiceHeight -= 2;
-                chooseUP.stop();
-                chooseUPREV.stop();
-                chooseDOWNREV.stop();
-                chooseDOWN.play();
-            }
-            else {
-                this.powerupChoiceHeight *= 0.8;
-
-                if (chooseUP.getPercent() > 0) {
-                    chooseUPREV.play();
-                    chooseUPREV.setPercent(120 - chooseUP.getPercent());
-                }
-
-                if (chooseDOWN.getPercent() > 0) {
-                    chooseDOWNREV.play();
-                    chooseDOWNREV.setPercent(120 - chooseDOWN.getPercent());
-                }
-
-                chooseUP.stop();
-                chooseDOWN.stop();
-            }
-
-            if (this.powerupChoiceHeight > this.timeToGetPowerup && this.chosePowerupDelay == 0) {
-                chooseUP.stop();
-                chooseUPREV.stop();
-                chooseDOWN.stop();
-                chooseDOWNREV.stop();
-                this.selectPowerup(this.powerupChoices[0].powerup);
-                var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
-                this.createFadeArrow(arrowX, 80, 1);
-                frigginChosePow = 0;
-            }
-            else if (this.powerupChoiceHeight < -this.timeToGetPowerup && this.chosePowerupDelay == 0) {
-                chooseUP.stop();
-                chooseUPREV.stop();
-                chooseDOWN.stop();
-                chooseDOWNREV.stop();
-                this.selectPowerup(this.powerupChoices[1].powerup);
-                var arrowX = this.powerupChoice.player == 0 ? ARROW_MARGIN : gameSize.width - ARROW_MARGIN;
-                this.createFadeArrow(arrowX, 80, -1);
-                frigginChosePow = 1;
-            }
-        }
-
-        if (this.p1Score > this.p2Score) {
-            this.highscore = this.p1Score;
-            if (this.highscore >= this.scoreToWin) {
-                this.gameDone = 1;
-            }
-        }
-        else {
-            this.highscore = this.p2Score;
-            if (this.highscore >= this.scoreToWin) {
-                this.gameDone = 2;
-            }
-        }
-
-        if (this.gameDone) {
-            this.winSequence();
-        }
-        else {
-
-            if (this.countdown && !this.gameDone && this.readyToStart) {
-                this.countdown -= dt * 25;
-
-                if (this.countdown <= 0) {
-                    this.countdown = 0;
-                    this.pause = false;
-                }
-            }
-
-            if (this.pause) {
-                return;
-            }
-
-            if (keyDown[KEYS.UP]) {
-                this.player2.accelerate(-this.speed);
-            }
-            if (keyDown[KEYS.DOWN]) {
-                this.player2.accelerate(this.speed);
-            }
-
-            if (keyDown[KEYS.W]) {
-                this.player1.accelerate(-this.speed);
-
-            }
-            if (keyDown[KEYS.S]) {
-                this.player1.accelerate(this.speed);
-            }
-
-            this.player1.update(dt);
-            this.player2.update(dt);
-            this.ball.update(dt, this);
-
-            if (this.ball.win) {
-                if (this.ball.win === 1) {
-                    this.p1Score++;
+                if (this.score[0] >= this.SCORE_TO_WIN)
+                    this.game.setState(new GameOverScreen(this.players[0]));
+                else
                     this.giveExperience(0, this.expPerWin);
-                }
-                else {
-                    this.p2Score++;
-                    this.giveExperience(1, this.expPerWin);
-                }
-
-                this.uiNeedsUpdate = true;
-                this.pause = true;
-                this.init();
             }
+            else {
+                this.score[1]++;
+
+                if (this.score[1] >= this.SCORE_TO_WIN)
+                    this.game.setState(new GameOverScreen(this.players[1]));
+                else
+                    this.giveExperience(1, this.expPerWin);
+            }
+
+            this.uiNeedsUpdate = true;
+            this.pause = true;
+            console.log(this.ball.win);
+            this.init();
         }
     }
 };
 
 InGame.prototype.drawExperiences = function(context) {
-    var grds;
     if (this.juice.expBarColor) {
-        grds = [
-            context.createLinearGradient(0.000, 150.000, gameSize.width / 2 - 100, 150.000),
-            context.createLinearGradient(gameSize.width / 2 + 100, 150.000, gameSize.width, 150.000)
-        ];
-        grds[0].addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
-        grds[0].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-        grds[0].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-        grds[0].addColorStop(1.000, 'rgba(255, 0, 0, 1.000)');
-
-        grds[1].addColorStop(0.000, 'rgba(255, 0, 0, 1.000)');
-        grds[1].addColorStop(0.365, 'rgba(255, 255, 0, 1.000)');
-        grds[1].addColorStop(0.626, 'rgba(255, 255, 0, 1.000)');
-        grds[1].addColorStop(1.000, 'rgba(0, 255, 0, 1.000)');
+        context.fillStyle = this.grds.exp;
     }
     else {
-        grds = ["rgba(100, 100, 100, 1)", "rgba(100, 100, 100, 1)"];
+        context.fillStyle = "rgba(100, 100, 100, 1)";
     }
 
-    var padding = 50;
     var expBarHeight = 23;
-    var expBarWidth = gameSize.width / 2 - (2 * padding + 75);
+    var expBarWidth = GAME_WIDTH / 2 - (2 * this.UI_PADDING + 75);
+
+    var boxMargin = 5;
+    context.strokeStyle = "rgb(100, 100, 100)";
+    context.lineWidth = 3;
 
     for(var i = 0; i < 2; i ++) {
         // Fill with gradient but not more than 100%
         var diff = (this.experience[i] > 100 ? 100 : this.experience[i]) - this.expWidth[i];
         this.expWidth[i] += diff / 7;
 
-        // Keep animating!!
-        if (diff !== 0)
-            this.uiNeedsUpdate = true;
+        // For player 1, flip the canvas
+        if (i === 1) {
+            context.save();
+            context.scale(-1, 1);
+            context.translate(-GAME_WIDTH, 0);
+        }
 
-        var p2Width = expBarWidth * this.expWidth[i] / 100;
-        context.fillStyle = grds[i];
-        if (i === 0)
-            context.fillRect(padding, padding, expBarWidth * this.expWidth[i] / 100, expBarHeight);
-        else
-            context.fillRect(gameSize.width - padding - p2Width, padding, p2Width, expBarHeight);
+        context.fillRect(this.UI_PADDING, this.UI_PADDING, 
+                         expBarWidth * this.expWidth[i] / 100, 
+                         expBarHeight);
+        // Draw the gray box around em
+        context.strokeRect(this.UI_PADDING - boxMargin, this.UI_PADDING - boxMargin,
+                           expBarWidth + 2 * boxMargin,
+                           expBarHeight + 2 * boxMargin);
+
+        if (i === 1) {
+            context.restore();
+        }
     }
-
-    // Draw the gray box around em
-    var boxMargin = 5;
-    var boxY = padding - boxMargin;
-    var boxWidth = expBarWidth + boxMargin * 2;
-    var boxHeight = expBarHeight + boxMargin * 2;
-    context.strokeStyle = "rgb(100, 100, 100)";
-    context.lineWidth = 3;
-    context.strokeRect(padding - boxMargin,
-            boxY,
-            boxWidth,
-            boxHeight);
-    context.strokeRect(gameSize.width - padding - boxMargin - expBarWidth,
-            boxY,
-            boxWidth,
-            boxHeight);
 };
 
-var ARROW_SHAFT_WIDTH = 20;
-var ARROW_TIP_BASE_WIDTH = 40;
-var ARROW_HEAD_LENGTH = 100;
-var ARROW_SHAFT_HEIGHT = 30;
-
-var jankyArrowScale = 1;
-function drawArrow(arrowX, fillPercent, xScale, yScale, fillStyle, strokeStyle) {
-   // FILL ARROW
-    context.save();
-    
-	context.translate(arrowX, gameSize.height/2 - yScale * 65);
-    context.scale(xScale, yScale);
-    
-
-    var clipY = -fillPercent * (ARROW_HEAD_LENGTH + ARROW_SHAFT_HEIGHT) + ARROW_SHAFT_HEIGHT
-    context.rect(-1000,
-                 clipY, 
-                 2000, 
-                 1000);
-    context.clip();
-
-    context.scale(jankyArrowScale, jankyArrowScale);
-    context.beginPath();
-    context.moveTo(-ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
-    context.lineTo(-ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo(-ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo(  0, -ARROW_HEAD_LENGTH);  // Arrow point
-    context.lineTo( ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo( ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
-    context.closePath();
-
-    context.fillStyle = fillStyle;
-    context.fill();
-    context.restore();
-
-    
-    // ARROW OUTLINE
-	context.save();
-
-	context.translate(arrowX, gameSize.height/2 - yScale * 65);
-    context.scale(1, yScale);
-    
-    context.beginPath();
-    context.moveTo(-ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
-    context.lineTo(-ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo(-ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo(  0, -ARROW_HEAD_LENGTH);  // Arrow point
-    context.lineTo( ARROW_TIP_BASE_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo( ARROW_SHAFT_WIDTH, -ARROW_SHAFT_HEIGHT);
-    context.lineTo( ARROW_SHAFT_WIDTH,  ARROW_SHAFT_HEIGHT);
-    context.closePath();
-
-    context.strokeStyle = strokeStyle;
-    context.lineWidth = 5;
-    context.stroke();
-
-    context.restore();
-}
-
-InGame.prototype.createFadeArrow = function(x, y, flipped) {
-    this.fadeArrows.push( {x: x, y: y, scale: 1, alpha: 0.8, flipped: flipped } );
-}
-
-var ARROW_MARGIN = 200;
-InGame.prototype.drawPowerupArrows = function() {
-    var arrowX = 0;
-    if (this.powerupChoices.length > 0) {
-        if (this.powerupChoice.player == 0) {
-            arrowX = ARROW_MARGIN;
-        }
-        else {
-            arrowX = gameSize.width - ARROW_MARGIN;
-        }
-
-        var fillHeight = this.powerupChoiceHeight / this.timeToGetPowerup;
-        var arrowGradient = context.createLinearGradient(150.000, 0.000, 150.000, 300.000);
-      
-        // Add colors
-        arrowGradient.addColorStop(0.000, 'rgba(255, 255, 86, 1.000)');
-        arrowGradient.addColorStop(1.000, 'rgba(127, 0, 127, 1.000)');
-
-        if (fillHeight < 0) {
-            drawArrow(arrowX, -fillHeight, 1, -1, arrowGradient, "white");
-            drawArrow(arrowX, 0,           1,  1, arrowGradient, "white");
-        }
-        else {
-            drawArrow(arrowX, 0,           1, -1, arrowGradient, "white");
-            drawArrow(arrowX, fillHeight,  1,  1, arrowGradient, "white");
-        }
-    }
-}
-
-InGame.prototype.drawReadyArrows = function() {
-    var readyGradient = context.createLinearGradient(150.000, 0.000, 150.000, 300.000);
-
-    // Add colors
-    readyGradient.addColorStop(0.000, 'rgba(0, 255, 0, 1.000)');
-    readyGradient.addColorStop(0.994, 'rgba(0, 255, 0, 1.000)');
-
-    // P1 arrow
-    var p1Fill = this.p1ReadyHeight / this.timeToGetReady;
-    drawArrow(ARROW_MARGIN, p1Fill, 1, 1, readyGradient, "white");
-
-    // P2 arrow
-    var p2Fill = this.p2ReadyHeight / this.timeToGetReady;
-    drawArrow(gameSize.width - ARROW_MARGIN, p2Fill, 1, 1, readyGradient, "white");
-}
-
-var floatOffset = 0;
-
-InGame.prototype.draw = function(context) {
-    if (this.uiNeedsUpdate) {
-        this.uiNeedsUpdate = false;
-
-        this.uiContext.clearRect(0, 0, this.ui.width, this.ui.height);
-
-        // Draw score
-        var scores = this.p1Score.toString() + "   " + this.p2Score.toString();
-
-        context.fillStyle = "white";
-        context.font = "50px Poiret One";
-        var scoreWidth = context.measureText(scores).width;
-        context.fillText(scores, (gameSize.width / 2) - (scoreWidth / 2), 50);
-
-        // Draw experience bar
-        this.drawExperiences(this.uiContext);
-    }
-
+InGame.prototype.render = function(context) {
     // Draw the background first
     if (!this.gameDone) {
-        var x = Math.floor(gameSize.width / 2 - this.juice.background.width / 2);
-        var y = Math.floor(gameSize.height / 2 - this.juice.background.height / 2);
+        var x = Math.floor(GAME_WIDTH / 2 - this.background.width / 2);
+        var y = Math.floor(GAME_HEIGHT / 2 - this.background.height / 2);
 
         // Redraw this
         // context.clearRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
         
-        context.drawImage(this.juice.background, x, y,
-            Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
+        context.drawImage(this.background, x, y,
+            Math.floor(this.background.width), Math.floor(this.background.height));
 
         context.fillStyle = "rgba(0, 0, 0, 0.7)";
-        context.fillRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
+        context.fillRect(x, y, Math.floor(this.background.width), Math.floor(this.background.height));
 
         // Draw shields
-        if (this.player1.hasPowerup(Shield)) {
-            context.fillStyle = this.leftShieldGrd;
-            context.fillRect(0, 0, 10, gameSize.height);
-        }
-        if (this.player2.hasPowerup(Shield)) {
-            context.fillStyle = this.rightShieldGrd;
-            context.fillRect(gameSize.width - 10, 0, 10, gameSize.height);
-        }
-    }
-
-    context.drawImage(this.ui, 0, 0, gameSize.width, gameSize.height);
-
-    // Game over. Spawn cards and make 'em bounce
-    if (this.gameDone) {
-        if (keyDown[KEYS.SPACE])
-            changeState(new TitleScreen());
-
-        if (this.cardFrame % 3 === 0) {
-            for (var l = 0; l < this.particles.length; l ++) {
-                this.particles[l].draw(context, (this.cardAlpha > 1 ? 1 : this.cardAlpha));
-            }
-            this.cardAlpha *= 0.99;
-
-        }
-
-        if (this.cardAlpha < 0.05) {
-            context.fillStyle = "rgba(0, 0, 0, 0.1)";
-            context.fillRect(0, 0, gameSize.width, gameSize.height);
-
-            if (this.particles.length > 0 && Math.random() < 0.3) {
-                this.particles.splice(0, 1);
-
-                if (this.particles.length === 0)
-                    setTimeout(function() {
-                        changeState(new TitleScreen());
-                    }, 1000);
-            }
-        }
-    }
-    // Ready screen. Draw arrows and fill 'em up.
-    else if (!this.readyToStart) {
-        this.drawReadyArrows();
-        this.player1.draw(context);
-        this.player2.draw(context);
-
-        this.ball.draw(context);
-
-        context.font = "30pt Arial";
-        context.fillStyle = this.p1Ready ? "rgb(0, 255, 0)" : "white";
-        var text = this.p1Ready ? "READY!" : "READY?";
-        
-        var textLength = context.measureText(text).width;
-
-        context.fillText(text, ARROW_MARGIN - textLength/2, 140 + Math.sin(floatOffset) * 15);
-
-        text = this.p2Ready ? "READY!" : "READY?";
-        context.fillStyle = this.p2Ready ? "rgb(0, 255, 0)" : "white";
-        textLength = context.measureText(text).width;
-
-        context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 140 + Math.sin(floatOffset) * 15);
-
-        floatOffset += 0.1;
-
-        text = "[W]";
-        context.fillStyle = "white";
-        textLength = context.measureText(text).width;
-        context.fillText(text, ARROW_MARGIN - textLength/2, 450);
-        text = "[UP]";
-        textLength = context.measureText(text).width;
-        context.fillText(text, gameSize.width - ARROW_MARGIN - textLength/2, 450);
-    }
-    else {
-        if (this.portals) {
-            context.fillStyle = "blue";
-            context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
-            context.fillStyle = "orange";
-            context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
-        }
-
-        this.drawPowerupArrows();
-
-        this.player1.draw(context);
-        this.player2.draw(context);
-
-        this.ball.draw(context);
-
-        // Draw countdown
-        if (this.countdown > 200) {
-            if (this.countdown < 4000) {
-                var seconds = Math.floor(this.countdown / 1000);
-                if (this.numSoundsToPlay >= seconds) {
-                    this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
-                    this.numSoundsToPlay = this.numSoundsToPlay - 1;
+        for (var p = 0; p <= 1; p ++) {
+            if (this.players[p].hasPowerup(Shield)) {
+                context.save();
+                if (p === 1) {
+                    context.scale(-1, 1);
+                    context.translate(-GAME_WIDTH, 0);
                 }
 
-                var text;
-                if (this.countdown > 1000)
-                    text = seconds.toString();
-                else
-                    text = 'GO!';
+                context.fillStyle = this.grds.shield;
+                context.fillRect(0, 0, 10, GAME_HEIGHT);
 
-                var timeToNext = (this.countdown % 1000) / 1000;
-                var maxSize = 600;
-                var fontSize = maxSize - maxSize * timeToNext;
-
-                if (!this.juice.countdown)
-                    fontSize = 200;
-
-                context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
-                context.font = fontSize + "pt Arial Black";
-                var textSize = context.measureText(text);
-                context.fillText(text, (gameSize.width / 2) - (textSize.width / 2),
-                        (gameSize.height / 2) + fontSize / 2);
+                context.restore();
             }
-        }
-
-        // Draw powerupChoices!
-        for (var i = 0; i < this.powerupChoices.length; i ++) {
-            this.powerupChoices[i].draw(context, this.powerupChoice.player);
         }
     }
     
-    // Draw fade arrows as necessary
-    for (var ndx = 0; ndx < this.fadeArrows.length; ndx++) {
-        var currArrow = this.fadeArrows[ndx];
-        jankyArrowScale = currArrow.scale;
-        drawArrow(currArrow.x, 2, 1, currArrow.flipped, "rgba(255, 255, 255, " + currArrow.alpha + ")", "rgba(0, 0, 0, 0)");
-        jankyArrowScale = 1;
+    // Draw experience bar
+    this.drawExperiences(context);
+
+    var scoreDist = this.UI_PADDING;
+    context.drawImage(this.scoreLabels[0], GAME_CENTER.x - scoreDist - this.scoreLabels[0].width / 2, this.UI_PADDING - 10);
+    context.drawImage(this.scoreLabels[1], GAME_CENTER.x + scoreDist - this.scoreLabels[1].width / 2, this.UI_PADDING - 10);
+
+    if (this.portals) {
+        context.fillStyle = "blue";
+        context.fillRect(this.portal1.x, this.portal1.y, this.ball.getSize() + 10, 100);
+        context.fillStyle = "orange";
+        context.fillRect(this.portal2.x, this.portal2.y, this.ball.getSize() + 10, 100);
     }
-};
 
-InGame.prototype.winSequence = function() {
-    if (this.cardFrame-- <= 0) {
-        this.cardFrame = 24;
+    this.players[0].draw(context);
+    this.players[1].draw(context);
 
-        if (this.particles.length > 52)
-            return;
+    this.ball.draw(context);
 
-        var cwidth = this.player1.getWidth();
-        var cheight = this.player1.getHeight();
-
-        var newParticle = function ( x, y, direction ) {
-            card = Math.floor(Math.random() * 52);
-
-            var particle = new Particle(card, x, y + cheight / 2, direction * 4, - Math.random() * 16 , cwidth, cheight);
-
-            return particle;
-        }
-
-        if (this.cardAlpha === 2) {
-            if (this.gameDone === 1) {
-                this.particles.push(newParticle(this.player1.getX() + this.player1.width /  2, this.player1.getY(), 1));
+    // Draw countdown
+    if (this.countdown > 200) {
+        if (this.countdown < 4000) {
+            var seconds = Math.floor(this.countdown / 1000);
+            if (this.numSoundsToPlay >= seconds) {
+                this.numSoundsToPlay == 0 ? startSound2.play() : startSound1.play();
+                this.numSoundsToPlay = this.numSoundsToPlay - 1;
             }
-            else {
-                this.particles.push(newParticle(this.player2.getX() + this.player1.width /  2, this.player2.getY(), -1));
-            }
+
+            var text;
+            if (this.countdown > 1000)
+                text = seconds.toString();
+            else
+                text = 'GO!';
+
+            var timeToNext = (this.countdown % 1000) / 1000;
+            var maxSize = 600;
+            var fontSize = maxSize - maxSize * timeToNext;
+
+            if (!this.juice.countdown)
+                fontSize = 200;
+
+            context.fillStyle = "rgba(255, 255, 255, " + 2 * timeToNext * (1 - timeToNext) + ")";
+            context.font = fontSize + "pt Arial Black";
+            var textSize = context.measureText(text);
+            context.fillText(text, (GAME_WIDTH / 2) - (textSize.width / 2),
+                    (GAME_HEIGHT / 2) + fontSize / 2);
         }
-        else {
-            this.particles.push(newParticle(Math.random() * gameSize.width, Math.random() * gameSize.height, Math.random() * 2 - 1));
-        }
-    }
-        
-    for (var l = 0; l < this.particles.length; l ++) {
-        //this.particles[l].height = 96;
-        this.particles[l].update(context);
     }
 };

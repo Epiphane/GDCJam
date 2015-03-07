@@ -149,12 +149,12 @@ Portals.prototype.action = function() {
     if (this.uses > 0 && !this.game.portals) {
         this.game.portals = true;
 
-        this.game.portal1.x = gameSize.width / 2 - 10 - Math.random() * gameSize.width / 8;
-        this.game.portal1.y = Math.random() * (gameSize.height - 100);
+        this.game.portal1.x = GAME_WIDTH / 2 - 10 - Math.random() * GAME_WIDTH / 8;
+        this.game.portal1.y = Math.random() * (GAME_HEIGHT - 100);
         this.game.portal1.width = this.game.ball.getSize() + 10;
 
-        this.game.portal2.x = gameSize.width / 2 + 10 + Math.random() * gameSize.width / 8;
-        this.game.portal2.y = Math.random() * (gameSize.height - 100);
+        this.game.portal2.x = GAME_WIDTH / 2 + 10 + Math.random() * GAME_WIDTH / 8;
+        this.game.portal2.y = Math.random() * (GAME_HEIGHT - 100);
         this.game.portal2.width = this.game.ball.getSize() + 10;
 
         this.game.shape1 = new SAT.Box(new SAT.Vector(this.game.portal1.x, this.game.portal1.y), this.game.ball.getSize() + 10, 100).toPolygon();
@@ -191,28 +191,12 @@ ReverseControls.prototype.name = "FLIP ENEMY";
 ReverseControls.prototype.icon = makeIcon("reverse");
 
 ReverseControls.prototype.start = function() {
-    if (this.player.player === 1) {
-        KEYS.UP = 40;
-        KEYS.DOWN = 38;
-        this.game.player2.angle = Math.PI;
-    }
-    else {
-        KEYS.W = 83;
-        KEYS.S = 87;
-        this.game.player1.angle = Math.PI;
-    }
+    this.game.players[1 - this.player.player].angle = Math.PI;
+    this.game.players[1 - this.player.player].dir = -1;
 }
 ReverseControls.prototype.done = function() {
-    if (this.player.player === 1) {
-        KEYS.DOWN = 40;
-        KEYS.UP = 38;
-        this.game.player2.angle = Math.PI;
-    }
-    else {
-        KEYS.S = 83;
-        KEYS.W = 87;
-        this.game.player1.angle = Math.PI;
-    }
+    this.game.players[1 - this.player.player].angle = Math.PI;
+    this.game.players[1 - this.player.player].dir = 1;
 }
 
 var Magnet = function() { 
@@ -233,12 +217,11 @@ Magnet.prototype.approach = Magnet.prototype.moveAway = function(dx, dy) {
 Powerup.prototype.available = [Magnet, WideBar, Shield, GhostBall, FireBall, IceBall, Portals, ReverseControls];
 
 (function() {
-    Powerup.getRandomPowerup = function(game, player, other) {
-        var p = (player === 1 ? game.player1 : game.player2);
+    Powerup.getRandomPowerup = function(player, other) {
         var ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
         while(Powerup.prototype.available[ndx] !== Shield && 
-            p.hasPowerup(Powerup.prototype.available[ndx]) &&
-            Powerup.prototype.available[ndx] !== other) {
+            player.hasPowerup(Powerup.prototype.available[ndx]) ||
+            Powerup.prototype.available[ndx] === other) {
             ndx = Math.floor(Math.random() * Powerup.prototype.available.length);
         }
 
