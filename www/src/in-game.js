@@ -135,7 +135,7 @@ InGame.prototype.init = function() {
     this.players[1].setY(GAME_HEIGHT / 2 - this.players[1].getHeight() / 2);
     this.ball = new Ball(GAME_WIDTH / 2, GAME_HEIGHT / 2, null, this.speed);
 
-    this.countdown = 1000;
+    this.countdown = 4000;
     this.numSoundsToPlay = 3;
 
     this.setJuiceAndAdd();
@@ -161,7 +161,7 @@ InGame.prototype.shakeScreen = function() {
  */
 InGame.prototype.update = function(dt) {
     if (this.countdown) {
-        this.countdown -= Math.floor(dt * 1000);
+        this.countdown -= Math.floor(dt * 500);
 
         if (this.countdown <= 0) {
             this.countdown = 0;
@@ -177,6 +177,10 @@ InGame.prototype.update = function(dt) {
             if (this.ball.win === 1) {
                 this.score[0]++;
 
+                var ctx = this.scoreLabels[0].getContext('2d');
+                ctx.clearRect(0, 0, this.scoreLabels[0].width, this.scoreLabels[0].height);
+                ctx.fillText(this.score[0], 0, 0);
+
                 if (this.score[0] >= this.SCORE_TO_WIN)
                     this.game.setState(new GameOverScreen(this.players[0]));
                 else
@@ -184,6 +188,10 @@ InGame.prototype.update = function(dt) {
             }
             else {
                 this.score[1]++;
+
+                var ctx = this.scoreLabels[1].getContext('2d');
+                ctx.clearRect(0, 0, this.scoreLabels[1].width, this.scoreLabels[1].height);
+                ctx.fillText(this.score[1], 0, 0);
 
                 if (this.score[1] >= this.SCORE_TO_WIN)
                     this.game.setState(new GameOverScreen(this.players[1]));

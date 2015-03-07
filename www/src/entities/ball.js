@@ -51,7 +51,7 @@ Ball.prototype.bounce = function() {
     }
 
     if (this.juice.speedup) {
-        this.baseSpeed += 0.5;        
+        this.baseSpeed += 5;
     }
 
     this.speedMult = 1;
