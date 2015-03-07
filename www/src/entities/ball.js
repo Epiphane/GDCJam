@@ -199,12 +199,12 @@ Ball.prototype.update = function(dt, game) {
                 this.bounce();
 
                 var dy = this.getY() - (game.players[p].getY() + game.players[p].getHeight() / 2);
-                console.log(dy / game.players[p].getHeight());
                 this.velocity.y = this.baseSpeed * dy / game.players[p].getHeight();
                 this.normalizeVelocity();
 
                 game.players[p].hitBall();
                 game.giveExperience(p);
+                game.shakeScreen();
 
                 this.playRandomBounce();
             }

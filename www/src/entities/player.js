@@ -89,9 +89,6 @@ Player.prototype.accelerate = function(dy) {
 Player.prototype.hitBall = function() {
     this.bounceTime = 40;
 
-    if (this.juice.shake)
-        shakeScreen();
-
     for (var ndx = 0; ndx < this.powerups.length; ndx ++) {
         this.powerups[ndx].action();
 

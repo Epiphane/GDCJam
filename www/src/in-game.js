@@ -14,12 +14,11 @@ function InGame() {
 
     this.expPerHit = 25;
     this.expPerWin = 50;
-    this.experience = [90, 90];
+    this.experience = [0, 0];
     this.score = [0, 0];
     this.expWidth = [0, 0];
 
-    this.gameDone = 0;
-    this.highscore = 0;
+    this.shake = 0;
 
     this.juiceLevel = 0;
     this.juice = {};
@@ -152,6 +151,10 @@ InGame.prototype.giveExperience = function(player, exp) {
     }
 };
 
+InGame.prototype.shakeScreen = function() {
+    this.shake = 20;
+};
+
 /**
  * Main animation loop!  Check for intersection, update rectangle
  *  objects, and draw to screen.
@@ -238,34 +241,37 @@ InGame.prototype.drawExperiences = function(context) {
 };
 
 InGame.prototype.render = function(context) {
+    if (this.shake) {
+        context.save();
+        context.translate(Math.sin(this.shake) * this.shake / 4, 0);
+    }
+
     // Draw the background first
-    if (!this.gameDone) {
-        var x = Math.floor(GAME_WIDTH / 2 - this.background.width / 2);
-        var y = Math.floor(GAME_HEIGHT / 2 - this.background.height / 2);
+    var x = Math.floor(GAME_WIDTH / 2 - this.background.width / 2);
+    var y = Math.floor(GAME_HEIGHT / 2 - this.background.height / 2);
 
-        // Redraw this
-        // context.clearRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
-        
-        context.drawImage(this.background, x, y,
-            Math.floor(this.background.width), Math.floor(this.background.height));
+    // Redraw this
+    // context.clearRect(x, y, Math.floor(this.juice.background.width), Math.floor(this.juice.background.height));
+    
+    context.drawImage(this.background, x, y,
+        Math.floor(this.background.width), Math.floor(this.background.height));
 
-        context.fillStyle = "rgba(0, 0, 0, 0.7)";
-        context.fillRect(x, y, Math.floor(this.background.width), Math.floor(this.background.height));
+    context.fillStyle = "rgba(0, 0, 0, 0.7)";
+    context.fillRect(x, y, Math.floor(this.background.width), Math.floor(this.background.height));
 
-        // Draw shields
-        for (var p = 0; p <= 1; p ++) {
-            if (this.players[p].hasPowerup(Shield)) {
-                context.save();
-                if (p === 1) {
-                    context.scale(-1, 1);
-                    context.translate(-GAME_WIDTH, 0);
-                }
-
-                context.fillStyle = this.grds.shield;
-                context.fillRect(0, 0, 10, GAME_HEIGHT);
-
-                context.restore();
+    // Draw shields
+    for (var p = 0; p <= 1; p ++) {
+        if (this.players[p].hasPowerup(Shield)) {
+            context.save();
+            if (p === 1) {
+                context.scale(-1, 1);
+                context.translate(-GAME_WIDTH, 0);
             }
+
+            context.fillStyle = this.grds.shield;
+            context.fillRect(0, 0, 10, GAME_HEIGHT);
+
+            context.restore();
         }
     }
     
@@ -316,5 +322,10 @@ InGame.prototype.render = function(context) {
             context.fillText(text, (GAME_WIDTH / 2) - (textSize.width / 2),
                     (GAME_HEIGHT / 2) + fontSize / 2);
         }
+    }
+
+    if (this.shake) {
+        context.restore();
+        this.shake --;
     }
 };
