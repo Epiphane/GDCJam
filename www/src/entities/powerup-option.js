@@ -6,12 +6,12 @@ function PowerupOption(x, y, powerup) {
     var padding = 20;
 
     this.height = 120;
-    this.width = gameSize.width / 2 - 90;
+    this.width = GAME_WIDTH / 2 - 90;
 
-    this.x = (gameSize.width + 90) * x / 2 + padding;
+    this.x = (GAME_WIDTH + 90) * x / 2 + padding;
     this.y = padding + 60
     if (y === 1)
-        this.y = gameSize.height - padding - this.height;
+        this.y = GAME_HEIGHT - padding - this.height;
 
     this.powerup = powerup;
 }
@@ -34,7 +34,7 @@ PowerupOption.prototype.draw = function(context, player) {
         textX = ARROW_MARGIN - textSize/2;
     }
     else {
-        textX = gameSize.width - ARROW_MARGIN - textSize/2;
+        textX = GAME_WIDTH - ARROW_MARGIN - textSize/2;
     }
     context.fillText(text, textX, this.getY() + 60);
 };

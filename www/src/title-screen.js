@@ -13,7 +13,7 @@ function TitleScreen() {
         text: 'PLAY',
         hue: 0
     };
-    this.play.canvas = renderText(this.play.text, '30pt Arial', 'white');
+    this.play.canvas = renderText(this.play.text, '34pt Arial', 'white');
     this.play.context = this.play.canvas.getContext('2d');
 };
 
@@ -83,7 +83,7 @@ TitleScreen.prototype.render = function(context) {
     var rgb = HSVtoRGB(this.play.hue, 0.6, 1);
     this.play.context.clearRect(0, 0, this.play.canvas.width, this.play.canvas.height);
     this.play.context.fillStyle = "rgb(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ")";
-    this.play.context.fillText(this.play.text, 0, this.play.canvas.height);
+    this.play.context.fillText(this.play.text, 0, 0);
 
     // Draw the text (JUICY PONG + PLAY)
     context.drawImage(this.title,       GAME_CENTER.x - this.title.width / 2       - this.swoopValue,

@@ -38,8 +38,10 @@ Juicy.prototype.setState = function(state) {
    this.state = state;
    this.state.game = this;
 
-   if (!this.state.initialized)
+   if (!this.state.initialized) {
       this.state.init();
+      this.state.initialized = true;
+   }
 
    // Enable chaining
    return this;
@@ -60,7 +62,7 @@ Juicy.prototype.run = function() {
       var nextTime = new Date().getTime();
       var dt = (nextTime - lastTime) / 1000;
       if (self.state)
-         self.state.update(dt);
+         self.state.update(dt * 2);
       lastTime = nextTime;
 
       self.render();
@@ -71,6 +73,10 @@ Juicy.prototype.run = function() {
    // Enable chaining
    return this;
 };
+
+Juicy.prototype.pause = function() {
+   this.running = false;
+}
 
 Juicy.prototype.render = function() {
    if (this.state) {
@@ -146,12 +152,13 @@ function renderText(text, font, fillStyle) {
    size.height = parseInt(font, 10);
 
    canvas.width = Math.ceil(size.width);
-   canvas.height = Math.ceil(size.height * 4 / 3);
+   canvas.height = Math.ceil(size.height * 5 / 3);
 
+   context.textBaseline = 'top';
    context.font = font;
    context.fillStyle = fillStyle;
 
-   context.fillText(text, 0, size.height);
+   context.fillText(text, 0, 0);//size.height);
 
    return canvas;
 };

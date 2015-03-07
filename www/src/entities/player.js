@@ -2,12 +2,16 @@
  * Rectangle class.  Origin at (x, y), with specified width and height.
  *  bounceTime lets us animate bounciness on mouse down.
  */
-function Player(p) {
+function Player(p, speed) {
     this.player = p;
     this.ready = false;
 
+    this.width = 20;
+    this.height = 140;
+
     this.dy = 0;
-    this.max_dy = 20;
+    this.max_dy = 500;
+    this.speed = 300;
 
     this.juice = {
         color: false,
@@ -15,14 +19,16 @@ function Player(p) {
     };
 
     this.angle = 0;
+    this.dir = 1;
     this.powerups = [];
 
-    this.shape = new SAT.Box(new SAT.Vector(0, 0), 0, 0);
+    this.box = new SAT.Box(new SAT.Vector(0, 0), this.width, this.height);
+    this.shape = this.box.toPolygon();
 }
 
 Player.prototype.updateShape = function() {
-    this.shape = new SAT.Box(new SAT.Vector(this.getX(), this.getY()), 
-                            this.getWidth(), this.getHeight()).toPolygon();
+    this.box = new SAT.Box(new SAT.Vector(this.getX(), this.getY()), this.width, this.height);
+    this.shape = this.box.toPolygon();
 };
 
 Player.prototype.hasPowerup = function(powerup) {
@@ -66,8 +72,8 @@ Player.prototype.moveX = function(dx) { this.shape.pos.x += dx; };
 Player.prototype.moveY = function(dy) { this.shape.pos.y += dy; };
 Player.prototype.setX = function(x) { this.shape.pos.x = x; };
 Player.prototype.setY = function(y) { this.shape.pos.y = y; };
-Player.prototype.setWidth = function(width) { this.width = width; };
-Player.prototype.setHeight = function(height) { this.height = height; };
+Player.prototype.setWidth = function(width) { this.width = width; this.updateShape(); };
+Player.prototype.setHeight = function(height) { this.height = height; this.updateShape(); };
 
 Player.prototype.accelerate = function(dy) {
     this.dy += dy;
@@ -113,8 +119,9 @@ Player.prototype.ballDist = function(ballX, ballY, approaching) {
 };
 
 Player.prototype.update = function(dt) {
-	if (this.getY() + this.dy >= 0 && this.getY() + this.getHeight() + this.dy <= GAME_HEIGHT) {
-    	this.moveY(dt * this.dy);
+    var dist = dt * this.dy;
+	if (this.getY() + dist >= 0 && this.getY() + this.getHeight() + dist <= GAME_HEIGHT) {
+    	this.moveY(dist);
     	this.dy *= 0.6;
 	}
 	else {
@@ -125,6 +132,11 @@ Player.prototype.update = function(dt) {
         this.setY(0);
     if (this.getY() + this.getHeight() > GAME_HEIGHT)
         this.setY(GAME_HEIGHT - this.getHeight());
+
+    if (InputManager.control(this.player, CONTROLS.UP))
+        this.accelerate(-this.speed * this.dir);
+    if (InputManager.control(this.player, CONTROLS.DOWN))
+        this.accelerate(this.speed * this.dir);
 
     if (this.bounceTime && this.juice.bounce)
         this.jiggle();
@@ -169,7 +181,7 @@ Player.prototype.draw = function(context) {
             this.powerups[ndx].x += diffX / 6;
             this.powerups[ndx].y += diffY / 6;
 
-            if (this.player === 1)
+            if (this.player === 0)
                 powerupX += (20 + ICON_WIDTH);
             else
                 powerupX -= (20 + ICON_WIDTH);
