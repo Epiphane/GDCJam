@@ -51,9 +51,10 @@ Player.prototype.removePowerup = function(powerup) {
     }
 };
 
-Player.prototype.addPowerup = function(powerup, x, y) {
+Player.prototype.addPowerup = function(powerup, x, y, doAction) {
     powerup.start();
-    powerup.action();
+    if (doAction)
+        powerup.action();
     powerup.x = x;
     powerup.y = y;
     if (powerup.uses <= 0) {

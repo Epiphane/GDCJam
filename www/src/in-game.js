@@ -145,7 +145,10 @@ InGame.prototype.giveExperience = function(player, exp) {
     this.experience[player] += (exp || this.expPerHit);
 
     if (this.experience[player] >= 100) {
-        this.game.setState(new PowerupScreen(this, player));
+        if (exp) // This means that it's after one player "won"
+            this.game.setState(new PowerupScreen(this, player));
+        else
+            this.game.setState(new PowerupScreen(this, player, true));
 
         this.experience[player] -= 100;
     }
@@ -201,7 +204,6 @@ InGame.prototype.update = function(dt) {
 
             this.uiNeedsUpdate = true;
             this.pause = true;
-            console.log(this.ball.win);
             this.init();
         }
     }

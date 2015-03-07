@@ -1,9 +1,10 @@
-function PowerupScreen(game, player) {
+function PowerupScreen(game, player, doAction) {
    this.ARROW_RISE_SPEED = 2;
    this.ARROW_CHOOSE_TIME = 100;
 
    this.inGame = game;
    this.player = player;
+   this.doAction = doAction;
 
    this.baseX = (player === 0) ? ARROW_MARGIN : GAME_WIDTH - ARROW_MARGIN;
 }
@@ -86,7 +87,7 @@ PowerupScreen.prototype.update = function(dt) {
          this.createFadeArrow(this.baseX, 80, 1);
 
          var player = this.inGame.players[this.player];
-         player.addPowerup(new this.opt1(this.inGame, player), this.baseX, 140);
+         player.addPowerup(new this.opt1(this.inGame, player), this.baseX, 140, this.doAction);
 
          this.chosen = true;
       }
@@ -99,7 +100,7 @@ PowerupScreen.prototype.update = function(dt) {
          this.createFadeArrow(this.baseX, 80, -1);
 
          var player = this.inGame.players[this.player];
-         player.addPowerup(new this.opt2(this.inGame, player), this.baseX, GAME_HEIGHT - 140);
+         player.addPowerup(new this.opt2(this.inGame, player), this.baseX, GAME_HEIGHT - 140, this.doAction);
          
          this.chosen = true;
       }
