@@ -14,14 +14,14 @@ function InGame() {
 
     this.expPerHit = 25;
     this.expPerWin = 50;
-    this.experience = [0, 0];
+    this.experience = [90, 90];
     this.score = [0, 0];
     this.expWidth = [0, 0];
 
     this.shake = 0;
 
-    this.juiceLevel = 0;
-    this.juice = {};
+    this.expPerHit = 25;
+    this.expPerWin = 50;
 
     this.background = new Image();
     // this.background.src = "http://placekitten.com/g/1024/768";
@@ -58,9 +58,8 @@ function InGame() {
     // Create shield
     this.grds.shield.addColorStop(0.000, 'rgba(86, 170, 255, 1.000)');
     this.grds.shield.addColorStop(1.000, 'rgba(0, 0, 0, 0.000)');
-}
 
-InGame.prototype.setJuiceAndAdd = function() {
+    // Juice!
     this.ball.juice = {
         color: false,
         trail: false,
@@ -79,50 +78,29 @@ InGame.prototype.setJuiceAndAdd = function() {
         countdown: false
     };
 
-    this.expPerHit = 25;
-    this.expPerWin = 50;
+    this.juiced = false;
+}
 
-    switch (this.juiceLevel) {
-        case 8:
-            this.juice.background = this.background;
-        case 7:
-        case 6:
-        case 5:
-            this.ball.juice.color = true;
-        case 4:
-            this.juice.countdown = true;
-        case 3:
-            this.juice.expBarColor = true;
-        case 2:
-            this.ball.juice.trail = true;
-            this.players[0].juice.bounce = true;
-            this.players[1].juice.bounce = true;
-        case 1:
-            this.expPerHit = 10;
-            this.expPerWin = 40;
-            this.players[0].juice.shake = true;
-            this.ball.juice.sound = true;
-        case 0:
-            this.players[0].juice.color = true;
-            this.players[1].juice.color = true;
-            this.ball.juice.bounce = true;
-            break;
-        default:
-            this.ball.juice.color = true;
-            this.juice.countdown = true;
-            this.juice.expBarColor = true;
-            this.ball.juice.trail = true;
-            this.players[0].juice.bounce = true;
-            this.players[1].juice.bounce = true;
-            this.expPerHit = 10;
-            this.expPerWin = 40;
-            this.ball.juice.sound = true;
-            this.players[0].juice.color = true;
-            this.players[1].juice.color = true;
-            this.ball.juice.bounce = true;
-    }
+InGame.prototype.juiceIt = function() {
+    this.ball.juice.color = true;
+    this.juice.countdown = true;
+    this.juice.expBarColor = true;
+    this.ball.juice.trail = true;
+    this.players[0].juice.bounce = true;
+    this.players[1].juice.bounce = true;
+    this.expPerHit = 10;
+    this.expPerWin = 40;
+    this.players[0].juice.shake = true;
+    this.ball.juice.sound = true;
+    this.players[0].juice.color = true;
+    this.players[1].juice.color = true;
+    this.ball.juice.bounce = true;
 
-    this.juiceLevel ++;
+    this.expPerHit = 20;
+    this.expPerWin = 30;
+
+    this.juiced = true;
+    this.game.setState(new JuiceItScreen(this));
 };
 
 InGame.prototype.init = function() {
@@ -137,20 +115,25 @@ InGame.prototype.init = function() {
 
     this.countdown = 4000;
     this.numSoundsToPlay = 3;
-
-    this.setJuiceAndAdd();
 };
 
 InGame.prototype.giveExperience = function(player, exp) {
     this.experience[player] += (exp || this.expPerHit);
 
     if (this.experience[player] >= 100) {
-        if (exp) // This means that it's after one player "won"
-            this.game.setState(new PowerupScreen(this, player));
-        else
-            this.game.setState(new PowerupScreen(this, player, true));
+        // First, juice up the game
+        if (!this.juiced) {
+            this.givePowerup = player;
+            this.juiceIt();
+        }
+        else {
+            if (exp) // This means that it's after one player "won"
+                this.game.setState(new PowerupScreen(this, player));
+            else
+                this.game.setState(new PowerupScreen(this, player, true));
 
-        this.experience[player] -= 100;
+            this.experience[player] -= 100;
+        }
     }
 };
 
@@ -163,13 +146,13 @@ InGame.prototype.shakeScreen = function() {
  *  objects, and draw to screen.
  */
 InGame.prototype.update = function(dt) {
-    if (this.countdown) {
-        this.countdown -= Math.floor(dt * 500);
+    if (typeof(this.givePowerup) !== 'undefined') {
+        this.giveExperience(this.givePowerup, 0);
+        delete this.givePowerup;
+    }
 
-        if (this.countdown <= 0) {
-            this.countdown = 0;
-            this.pause = false;
-        }
+    if (this.countdown > 0) {
+        this.countdown -= Math.floor(dt * 500);
     }
     else {
         this.players[0].update(dt);
@@ -202,8 +185,6 @@ InGame.prototype.update = function(dt) {
                     this.giveExperience(1, this.expPerWin);
             }
 
-            this.uiNeedsUpdate = true;
-            this.pause = true;
             this.init();
         }
     }
