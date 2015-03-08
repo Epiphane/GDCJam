@@ -1,6 +1,6 @@
 function InGame() {
     // Initial variables
-    this.speed = 350;
+    this.speed = 300;
     this.UI_PADDING = 50;
     this.SCORE_TO_WIN = 5;
 
