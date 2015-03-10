@@ -79,6 +79,8 @@ function InGame() {
     };
 
     this.juiced = false;
+
+    soundTrack.play();
 }
 
 InGame.prototype.juiceIt = function() {
@@ -101,6 +103,7 @@ InGame.prototype.juiceIt = function() {
 
     this.juiced = true;
     this.game.setState(new JuiceItScreen(this));
+
 };
 
 InGame.prototype.init = function() {
